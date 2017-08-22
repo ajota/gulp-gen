@@ -1,0 +1,47 @@
+{
+    "angular-template": "node_modules/gulp-gen/angular-tpls/",
+    "appName": "app",
+    "appFolder": "./",
+    "defaultFolders": ["_appconfig", "common", "app.js"],
+    "buildFolder": "dist/",
+    "injectThirdApp": [],
+    "ignoreModuleInject":[],
+    "reloadWhenChange": ["*.html", "./**/*.html", "./app/*.js", "./app/**/*.js"],
+
+    "enviroments": {
+        "local":{
+            "local_url": "app/"
+        },
+        "desarrollo":{
+            "local_url": "app/"
+        },
+        "integracion":{
+            "local_url": "app/"
+        },
+        "produccion":{
+            "local_url": "app/"
+        }
+    },
+    
+    "mainFolders":{
+        "styles": "styles/",
+        "scripts": "scripts/",
+        "images": "images/"
+    },
+    
+    "custom_styles":[],
+    "common_bower":{
+        "styles":[],
+        "scripts":[]
+    },
+    
+	"azureDeploy": {
+        "user": "",
+        "password": "",
+        "host": "",
+        "port": 21,
+        "localFilesGlob": ["dist/*", "dist/**/*", "dist/**/**/*", "dist/**/**/**/*"],
+        "remoteFolder": ""
+    }
+
+}
