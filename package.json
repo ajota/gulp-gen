@@ -12,7 +12,7 @@
   },
   "author": "Anderson Velez",
   "license": "ISC",
-  "devDependencies": {
+  "dependencies": {
     "gulp-ejs": "^3.0.1",
     "gulp-inject": "^4.2.0",
     "gulp-inject-string": "^1.1.0",
