@@ -146,8 +146,6 @@ This command create a routes file with the name provided in the first argument i
     
 This command create a directive file with the name provided in the argument inside the common folder into a directory called "components" if this folder does not exist this command will create it.
 
-<br/>
-
 ## Pending features in mind:
 | Feature | Status |
 |-|-|
@@ -160,4 +158,6 @@ This command create a directive file with the name provided in the argument insi
  Automatically unit test creation. | Idea
  Angular version updates helper | Idea
 
- ## ¡ Please be Patient many updates and great functionalities comming ! 
+
+---
+ ## ¡ Please be patient many updates and great functionalities comming ! 
