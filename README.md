@@ -66,7 +66,7 @@ The Gulp Gen generator use the Jhon Papa's methodology described in "Angular s
 
 3. add the package  to your gulpfile 
 
-        var gulpGen = require('gulp-gen');
+        var gulpGen = require('gulp-gen')();
 
     **Important:** if your project is located into a folder you should to specify this with a dobble call javascript syntax.
         
@@ -78,16 +78,19 @@ The Gulp Gen generator use the Jhon Papa's methodology described in "Angular s
 
 ## Settings: 
  
-To generate an application directory is necessary to know that the name for this folder will be created by default with the name "app", but it could be change from the "app.json" settings file that should has been created after you run the "gulp gen" initial command.
+To generate an application directory is necessary to know that the name for this folder will be created by default with the name "app", but it could be changed from the "app.json" settings file that should has been created after you run the "gulp gen" initial command.
  
-The minimum properties required in this file are:
+### The minimum properties required in this file are:
  
     - "angular-template": "node_modules/gulp-gen/angular-tpls/", →  Contains by default the templates location created for angular to this plug-in
     - "appName": "cwApp", → it correspond to the name that will be used for generate the application directory and to create the name of the main module in the root file for the app. 
     - "appFolder": "./", →  Contains the path where the application files will be created.
     - "defaultFolders": ["_appconfig", "common", "app.js"], →  Required files and folders.
 
-  
+### Extra Settings
+    - "injectThirdApp": It is expected to be used only when the app that you are creating has a direct dependency from other angular application so you are using some files comming from that application, could be an application that you created before and you want to recycle functionalities or maybe a third part application that you need to use some of these functionalities.
+    - "ignoreModuleInject": This was created specifically to be used when you need to exlude files to be injected or user by the app you are creating
+     
 ## Use (commands): 
  
 All the commands built in this plug-in hava a structure based on the following parameters> 

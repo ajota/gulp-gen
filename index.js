@@ -78,7 +78,8 @@
         var gulpGen = function (appDirectory) {
     
             generateAppConfigFile(appDirectory);
-    
+            createInjectSections();
+
             gulp.task('gen', ['gen:app', 'gen:config'], function () {
     
                 var commonFiles = [
@@ -594,6 +595,162 @@
                     console.warn(gulpGenPrefix + 'The command should have (3) aguments, example: gulp gen:component -<directiveName>');
                     process.exit();
                 }
+            });
+
+            gulp.task('inject', function(){
+
+                var ignoreInjects = [];
+                var resources = AppResources.common_bower.scripts;
+                var cssFolder = AppResources.mainFolders.styles;
+                var scripts = AppResources.mainFolders.scripts;
+                var styles = AppResources.custom_styles;
+                var customScripts = AppResources.custom_scripts;
+                
+                var injectsThird = [];
+                var injectsCss = [];
+                var injectSass = [];
+                var injectsLibs = [];
+                var injectScripts = [];
+                var injectsApp = AppResources.appFolder + AppResources.appName + '/app.js';
+                var injectsCommon = AppResources.appFolder + AppResources.appName + '/common/*.js';
+                var injectsComponents = AppResources.appFolder + AppResources.appName + '/common/**/*.directive.js';
+                var injectsModule = [
+                    AppResources.appFolder + AppResources.appName + '/_appconfig/*.js',
+                    AppResources.appFolder + AppResources.appName + '/**/*.module.js',
+                    AppResources.appFolder + AppResources.appName + '/**/*.routes.js'
+                ];
+                var injectsFactory = AppResources.appFolder + AppResources.appName + '/**/*.factory.js';
+                var injectsControllers = AppResources.appFolder + AppResources.appName + '/**/*.controller.js';   
+                
+                //thirdy part app module
+                if (AppResources.injectThirdApp) {
+                    injectsThird = AppResources.injectThirdApp;
+                }
+                //if a ignore path is set into app.json "ignoreModuleInject" property.
+                if (AppResources.ignoreModuleInject && AppResources.ignoreModuleInject.length > 0) {
+                    injectsApp = [injectsApp];
+                    injectsCommon = [injectsCommon];
+                    injectsComponents = [injectsComponents];
+                    injectsFactory = [injectsFactory];
+                    injectsControllers = [injectsControllers];
+
+                    for (var i = 0; i < AppResources.ignoreModuleInject.length; i++) {
+
+                        var isNotModule = /\..*$/i.test(AppResources.ignoreModuleInject);
+                        var endPath = (isNotModule) ? '' : '/*';
+                        var ignore = '!' + develop + AppResources.appName + '/' + AppResources.ignoreModuleInject + endPath;
+                        injectsApp.push(ignore);
+                        injectsCommon.push(ignore);
+                        injectsComponents.push(ignore);
+                        injectsFactory.push(ignore);
+                        injectsControllers.push(ignore);
+                        injectsModule.push(ignore);
+                    }
+                } else {
+                    console.info(gulpGenPrefix + "\"ignoreModuleInject\" property should be an array with module names or a file paths");
+                }
+
+                customScripts.forEach(function (item) {
+                    var fileRoute = AppResources.appFolder + scripts + item;
+                    var isSetRoute = injectScripts.indexOf(fileRoute);
+                    if(isSetRoute >= 0){
+                        injectScripts.splice(isSetRoute,1);
+                    }
+                    injectScripts.push(fileRoute);
+                });
+                
+                
+                styles.forEach(function (item) {
+                    var fileRoute = AppResources.appFolder + cssFolder + item;
+                    var isSetRoute = injectsCss.indexOf(fileRoute);
+                    var ext = fileRoute.split('.').pop();
+                    
+                    if(isSetRoute >= 0){
+                        injectsCss.splice(isSetRoute,1);
+                    }
+                    if(ext.search(/sass|scss|less/g) >= 0){
+                        injectSass.push(fileRoute);
+                    }else{
+                        injectsCss.push(fileRoute);
+                    }
+                });
+
+                resources.forEach(function(item){
+                    injectsLibs.push(AppResources.appFolder + scripts + 'libs/' + item);
+                });
+                
+                gulp.src(AppResources.appFolder + '/index.html')
+                    .pipe(inject(
+                        gulp.src(injectsLibs, {read:false}), 
+                        {addPrefix: 'ui',relative:true}
+                    ))
+                    .pipe(inject(
+                        gulp.src(injectsThird, { read: false }),
+                        { starttag: '<!--inject:thirdApp:{{ext}}-->', relative: true, empty: true }
+                    ))
+                    .pipe(inject(
+                        gulp.src(injectScripts, {read:false}), 
+                        {starttag: '<!--inject:custom:{{ext}}-->',addPrefix: 'ui',relative:true}
+                    ))
+                    .pipe(inject(
+                        gulp.src(injectSass, {read:false}),
+                        {   starttag:'<!--inject:sass-->',
+                            endtag:'<!--endinject-->',
+                            addPrefix: 'ui', 
+                            transform: function (filepath) {
+                                return '<link rel="stylesheet" type="text/css" href="'+filepath+'">';
+                            },
+                            relative:true
+                        }
+                    ))
+                    .pipe(inject(
+                        gulp.src(injectsCss, {read:false}),
+                        {addPrefix: 'ui', relative:true}
+                    ))
+                    .pipe(inject(
+                        gulp.src(injectsApp, {read:false}),
+                        {starttag: '<!--inject:app:{{ext}}-->', addPrefix: 'ui',relative:true}
+                    ))
+                    .pipe(inject(
+                        gulp.src(injectsCommon, {read:false}),
+                        {starttag: '<!--inject:common:{{ext}}-->', addPrefix: 'ui',relative:true}
+                    ))
+                    .pipe(inject(
+                        gulp.src(injectsComponents, {read:false}),
+                        {starttag: '<!--inject:components:{{ext}}-->',addPrefix: 'ui', relative:true}
+                    ))
+                    .pipe(inject(
+                        gulp.src(injectsModule, {read:false}),
+                        {starttag: '<!--inject:module:{{ext}}-->', addPrefix: 'ui',relative:true}
+                    ))
+                    .pipe(inject(
+                        gulp.src(injectsFactory, {read:false}),
+                        {starttag: '<!--inject:factory:{{ext}}-->', addPrefix: 'ui',relative:true}
+                    ))
+                    .pipe(inject(
+                        gulp.src(injectsControllers, {read:false}),
+                        {starttag: '<!--inject:controller:{{ext}}-->', addPrefix: 'ui',relative:true}
+                    ))
+                    .pipe(gulp.dest(AppResources.appFolder));
+            });
+            
+            gulp.task('server', function () {
+                return gulp.start(AppResources.appName + ':server-reload');
+            });
+
+            gulp.task(AppResources.appName + ':server-reload', function () {
+                var reloadWhenChange = AppResources.reloadWhenChange;
+                var browserConfig = {
+                    server: "./",
+                    index: 'index.html'
+                };
+                var cond = AppResources.serverPort && !isNaN(AppResources.serverPort);
+                if(cond){
+                    browserConfig.port = AppResources.serverPort;
+                }
+            
+                browserSync.init(browserConfig);
+                gulp.watch(reloadWhenChange).on('change', browserSync.reload);
             });
         };
         
