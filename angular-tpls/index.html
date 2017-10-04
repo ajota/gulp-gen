@@ -9,6 +9,14 @@
 
     <title>App Title</title>
 
+    <!--production references-->
+    <!--Uncomment Dist-->
+        <link rel="stylesheet" href="css/fonts.css">
+        <link rel="stylesheet" href="css/libraries.css">
+        <link rel="stylesheet" href="css/custom.css">
+    <!--End:Uncomment Dist--> 
+
+    <!--develop references-->
     <!--inject:css-->
     <!--endinject-->
     
@@ -26,28 +34,39 @@
     <div ui-view="root" class="app">
         <!--Here load the view-->
     </div>
-    <!--inject:js-->
-    <!--endinject-->
-    
-    <!--inject:custom:js-->
-    <!--endinject-->
+    <!--production references-->
+    <!--Uncomment Dist-->
+        <!--<script src="scripts/libraries.js"></script>
+        <script src="scripts/angular-scripts.js"></script>
+        <script src="scripts/app/app.js"></script>-->
+    <!--End:Uncoment Dist-->    
+        
+    <!--Remove Dist-->
+        <!--develop references-->
 
-    <!--inject:common:js-->
-    <!--endinject-->
+        <!--inject:js-->
+        <!--endinject-->
+        
+        <!--inject:custom:js-->
+        <!--endinject-->
 
-    <!--inject:components:js-->
-    <!--endinject-->
+        <!--inject:common:js-->
+        <!--endinject-->
 
-    <!--inject:module:js-->
-    <!--endinject-->
+        <!--inject:components:js-->
+        <!--endinject-->
 
-    <!--inject:factory:js-->
-    <!--endinject-->
+        <!--inject:module:js-->
+        <!--endinject-->
 
-    <!--inject:controller:js-->
-    <!--endinject-->
+        <!--inject:factory:js-->
+        <!--endinject-->
 
-    <!--inject:app:js-->
-    <!--endinject-->
+        <!--inject:controller:js-->
+        <!--endinject-->
+
+        <!--inject:app:js-->
+        <!--endinject-->
+    <!--End:Remove Dist-->
 </body>
 </html>

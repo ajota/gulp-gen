@@ -12,7 +12,10 @@
         var gulp = require('gulp');
         var ejs = require('gulp-ejs');
         var inject = require('gulp-inject');
+        var concat = require('gulp-concat');
         var rename = require('gulp-rename');
+        var htmlmin = require('gulp-htmlmin');
+        var uglify =  require('gulp-uglify');
         var injectStr = require('gulp-inject-string');
         //var browserSync = require('browser-sync').create();
     
@@ -733,11 +736,16 @@
                     ))
                     .pipe(gulp.dest(AppResources.appFolder));
             });
+
             
             gulp.task('server', function () {
                 return gulp.start(AppResources.appName + ':server-reload');
             });
-
+            
+            gulp.task('build', function () {
+                return gulp.start(AppResources.appName + ':build');
+            });
+            
             gulp.task(AppResources.appName + ':server-reload', function () {
                 var reloadWhenChange = AppResources.reloadWhenChange;
                 var browserConfig = {
@@ -752,6 +760,67 @@
                 browserSync.init(browserConfig);
                 gulp.watch(reloadWhenChange).on('change', browserSync.reload);
             });
+
+            gulp.task(AppResources.appName + ':build', [AppResources.appName + ':publish'], function () {
+                var commentsRegexp = /<!--Uncomment Dist-->([\s\S]*?)<!--([\s\S]*?)-->([\s\S]*?)<!--End:Uncomment Dist-->/g;
+                var removeRegex = /<!--Remove Dist-->([\s\S]*?)<!--End:Remove Dist-->/g;
+                var versionRegex = '{{version}}';
+            
+                var appAll = [AppResources.appFolder + AppResources.buildFolder + 'app/' + config.appdest];
+            
+                var others = AppResources.injectThirdApp;
+                    others.concat([
+                        AppResources.appFolder + AppResources.appName + '/**/*.json',
+                        AppResources.appFolder + AppResources.appName + '/**/**/*.json',
+                        AppResources.appFolder + AppResources.appName + '/**/**/**/*.json'
+                    ]);
+                    
+                var appfiles = [
+                    AppResources.appFolder + AppResources.appName + '/**/resources.config.js',
+                    AppResources.appFolder + AppResources.appName + '/**/*.config.js',
+                    AppResources.appFolder + AppResources.appName + '/common/*.js',
+                    AppResources.appFolder + AppResources.appName + '/**/*.directive.js',
+                    AppResources.appFolder + AppResources.appName + '/**/*.module.js',
+                    AppResources.appFolder + AppResources.appName + '/**/*.routes.js',
+                    AppResources.appFolder + AppResources.appName + '/**/*.controller.js',
+                    AppResources.appFolder + AppResources.appName + '/**/**/*.factory.js',
+                    AppResources.appFolder + AppResources.appName + '/**/**/*.controller.js',
+                    AppResources.appFolder + AppResources.appName + '/app.js'
+                ];
+                var appViews = [
+                    AppResources.appFolder + AppResources.appName + '/**/*.html',
+                    
+                ];
+            
+                var sources = appAll.concat(others);
+                sources = sources.concat(appfiles);
+            
+                var task = gulp.src(sources);
+                task.pipe(concat(config.appdest))
+                    .pipe(uglify()).on('error', function (e) { console.log(e); })
+                    .pipe(gulp.dest(AppResources.buildFolder + 'app/'));
+            
+                task = gulp.src(appViews);
+                task.pipe(htmlmin());
+                task.pipe(gulp.dest(function (file) {
+                    var buildPath = file.base.replace(AppResources.appName, AppResources.buildFolder + 'app/');
+                    buildPath = buildPath.replace('_directivas', AppResources.buildFolder + 'app/directivas');
+                    buildPath = buildPath.replace(/\//g, '\u005c');
+            
+                    return buildPath;
+                }));
+            
+                task = gulp.src(AppResources.buildFolder + 'index.html');
+                task.pipe(injectStr.replace(removeRegex, ''))
+                    .pipe(injectStr.replace(commentsRegexp, '$2'))
+                    .pipe(injectStr.replace(versionRegex, Date.parse(new Date())))
+                    .pipe(gulp.dest(AppResources.buildFolder));
+            
+                return task;
+            });
+            
+
+            
         };
         
         module.exports = gulpGen;
