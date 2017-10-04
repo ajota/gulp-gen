@@ -17,7 +17,7 @@
         var htmlmin = require('gulp-htmlmin');
         var uglify =  require('gulp-uglify');
         var injectStr = require('gulp-inject-string');
-        //var browserSync = require('browser-sync').create();
+        var browserSync = require('browser-sync').create();
     
         //globals
         var name;
