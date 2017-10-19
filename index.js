@@ -75,7 +75,7 @@
             AppResources.defaultFolders = [
                 AppResources.appConfigFolder || '_appconfig',
                 AppResources.commonFolderName || 'common',
-                AppResources.appMainModuleName + '.js' || 'app.js'
+                AppResources.mainAppModuleName + '.js' || 'app.js'
             ];
             
             
@@ -123,7 +123,7 @@
                     name = (Array.isArray(name)) ? name[0].replace(/[^\w]/, '') : name;
                     
                     var appFiles = [
-                        AppResources['angular-template'] + '' + AppResources.appMainModuleName + 'js',
+                        AppResources['angular-template'] + '' + AppResources.mainAppModuleName + 'js',
                     ];
                     
                     /*console.log(name);
@@ -197,7 +197,7 @@
                                 name.substr((camel + 1), name.length).charAt(0).toLocaleUpperCase() +
                                 name.substr((camel + 1), name.length).slice(1);
                         }
-                        var mainFileModule = AppResources.appFolder + AppResources.appName + '/' + (AppResources.mainAppFileName || '' + AppResources.appMainModuleName + 'js');
+                        var mainFileModule = AppResources.appFolder + AppResources.appName + '/' + (AppResources.mainAppFileName || '' + AppResources.mainAppModuleName + '.js');
                         // console.log(mainFileModule);
                         // process.exit();
                         if(fs.existsSync(mainFileModule)){    
@@ -275,7 +275,7 @@
                                 console.log(gulpGenPrefix + 'The ' + moduleName + ' is already injected!.');
                             }
                         }else{
-                            console.warn(gulpGenPrefix + '\n Make sure that the root file for the application in \"' + appDirectory + '\" directory is called the same as the folder application name. if not please use the \"mainAppFileName"\ property in ' + AppResources.appMainModuleName + 'json to put the name for this main application file.\n' );
+                            console.warn(gulpGenPrefix + '\n Make sure that the root file for the application in \"' + appDirectory + '\" directory is called the same as the folder application name. if not please use the \"mainAppFileName"\ property in app.json to put the name for this main application file.\n' );
                             process.exit();
                         }
                     } else {
@@ -321,7 +321,7 @@
                             subModule.substr((camelSubModulo + 1), subModule.length).slice(1);
                     }
     
-                    var mainModule = fs.readFileSync(AppResources.appFolder + AppResources.appName + '/' + AppResources.appMainModuleName + 'js', 'utf8').match(/module\('(.*)'/)[1];
+                    var mainModule = fs.readFileSync(AppResources.appFolder + AppResources.appName + '/' + AppResources.mainAppModuleName + 'js', 'utf8').match(/module\('(.*)'/)[1];
                     var moduleName = mainModule + '.' + name;
                     var subModuleUpper = subModule.charAt(0).toUpperCase() + subModule.slice(1);
     
@@ -612,19 +612,22 @@
 
             gulp.task('inject', function(){
 
+                //Default properties
+                AppResources.ignoreModuleInject = AppResources.ignoreModuleInject || [];
+                //
                 var ignoreInjects = [];
-                var resources = AppResources.common_bower.scripts;
-                var cssFolder = AppResources.mainFolders.styles;
-                var scripts = AppResources.mainFolders.scripts;
-                var styles = AppResources.custom_styles;
-                var customScripts = AppResources.custom_scripts;
+                var resources = AppResources.common_bower.scripts || [];
+                var cssFolder = AppResources.mainFolders.styles || [];
+                var scripts = AppResources.mainFolders.scripts || [];
+                var styles = AppResources.custom_styles || [];
+                var customScripts = AppResources.custom_scripts || [];
                 
                 var injectsThird = [];
                 var injectsCss = [];
                 var injectSass = [];
                 var injectsLibs = [];
                 var injectScripts = [];
-                var injectsApp = AppResources.appFolder + AppResources.appName + '/' + AppResources.appMainModuleName + 'js';
+                var injectsApp = AppResources.appFolder + AppResources.appName + '/' + AppResources.mainAppModuleName + 'js';
                 var injectsCommon = AppResources.appFolder + AppResources.appName + '/' + AppResources.commonFolderName + '/*.js';
                 var injectsComponents = AppResources.appFolder + AppResources.appName + '/' + AppResources.commonFolderName + '/**/*.directive.js';
                 var injectsModule = [
@@ -660,8 +663,6 @@
                         injectsControllers.push(ignore);
                         injectsModule.push(ignore);
                     }
-                } else {
-                    console.info(gulpGenPrefix + "\"ignoreModuleInject\" property should be an array with module names or a file paths");
                 }
 
                 customScripts.forEach(function (item) {
