@@ -38,8 +38,10 @@
             if(nUserDir) {
                 var cond = (/\w+\/$/i).test(nUserDir);
                 if(!cond){
-                    nUserDir =+ '/';
+                    nUserDir += '/';
                 }
+                // console.log(nUserDir);
+                // process.exit();
                 nDirectory = nDirectory + nUserDir;
             }
     
@@ -81,7 +83,7 @@
         var gulpGen = function (appDirectory) {
     
             generateAppConfigFile(appDirectory);
-            createInjectSections();
+            //createInjectSections();
 
             gulp.task('gen', ['gen:app', 'gen:config'], function () {
     
@@ -110,14 +112,16 @@
             gulp.task('gen:app', function () {
     
                 name = AppResources.appName;
-    
+                
                 if (name.length > 0) {
                     name = (Array.isArray(name)) ? name[0].replace(/[^\w]/, '') : name;
-    
+                    
                     var appFiles = [
                         AppResources['angular-template'] + 'app.js',
-                        //AppResources['angular-template'] + 'instructions.md',
                     ];
+                    
+                    /*console.log(name);
+                    process.exit();*/
                     var appFolder = AppResources.appName + '/';
                     var isDir = fs.existsSync(AppResources.appFolder + appFolder);
     
@@ -789,7 +793,6 @@
                 ];
                 var appViews = [
                     AppResources.appFolder + AppResources.appName + '/**/*.html',
-                    
                 ];
             
                 var sources = appAll.concat(others);

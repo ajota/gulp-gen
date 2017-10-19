@@ -90,6 +90,9 @@ To generate an application directory is necessary to know that the name for this
 ### Extra Settings
     - "injectThirdApp": It is expected to be used only when the app that you are creating has a direct dependency from other angular application so you are using some files comming from that application, could be an application that you created before and you want to recycle functionalities or maybe a third part application that you need to use some of these functionalities.
     - "ignoreModuleInject": This was created specifically to be used when you need to exlude files to be injected or user by the app you are creating
+    - "appMainModuleName": 
+    - "commonFolderName": 
+    - "appConfigFolder": 
      
 ## Use (commands): 
  
@@ -100,7 +103,7 @@ All the commands built in this plug-in hava a structure based on the following p
 ## Availables items list to generate: 
  
 - app 
-- config (configurations files for the app)
+- config (configurations files)
 - module 
 - submodule 
 - component (Directives and components)
