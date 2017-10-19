@@ -2,8 +2,6 @@
     "angular-template": "node_modules/gulp-gen/angular-tpls/",
     "appName": "app",
     "appFolder": "./",
-    
-    "defaultFolders": ["_appconfig", "common", "app.js"],
 
     "buildFolder": "dist/",
     "injectThirdApp": [],

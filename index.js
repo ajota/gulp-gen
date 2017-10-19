@@ -749,7 +749,43 @@
                     .pipe(gulp.dest(AppResources.appFolder));
             });
 
+            gulp.task('inject:route', function () {
+                if (tasksData.viewName) {
+                    var routesFolder = AppResources.appFolder + AppResources.appName + '/' + AppResources.appConfigFolder + '/';
+                    var routesFile = 'routes.config.js';
+                    var routesConfig = routesFolder + routesFile;
+                    var routesContent = fs.readFileSync(routesConfig);
             
+                    var isRoutes = /\'SITE_ROUTES\'/i.test(routesContent);
+                    var routesHasColen = /(,)[^].+\/\*@endRoutes\*\//g.test(routesContent);
+                    var urlsHasColen = /(,)[^].+\/\*@endUrls\*\//g.test(routesContent);
+            
+                    if (isRoutes) {
+                        //TODO: Probar tarea de injeccion de route
+                        var hasRoute = (new RegExp('\\b' + tasksData.viewName + '\\b', 'ig')).test(routesContent);
+            
+                        if (!hasRoute) {
+                            //please doesn't clean the whitespaces that is needed for indention
+                            var endRoutesStr = '\',\n                ';
+                            var endUrlStr = '\',\n                ';
+                            var beginRouteStr = (routesHasColen)? '' : ',\n                ';
+                            var beginUrlStr = (urlHasColen)? '' : ',\n                ';
+
+                            var task = gulp.src(routesConfig)
+                                .pipe(injectStr.before('\/\*@endRoutes\*\/', beginRouteStr + tasksData.viewName + ': \'' + tasksData.viewName + endRoutesStr))
+                                .pipe(injectStr.before('\/\*@endUrls\*\/', beginUrlStr + tasksData.viewName + ': \'/' + tasksData.viewName + endUrlStr))
+                                .pipe(gulp.dest(routesFolder));
+                            tasksData = {};
+                            return task;
+                        } else {
+                            console.info(gulpGenPrefix + 'The route "' + tasksData.viewName + '" has been already created');
+                        }
+                    } else {
+                        console.info(gulpGenPrefix + 'The could not find the ".routes.js" file in "' + AppResources.appConfigFolder + '" folder');
+                    }
+                }
+            });
+
             gulp.task('server', function () {
                 return gulp.start(AppResources.appName + ':server-reload');
             });
