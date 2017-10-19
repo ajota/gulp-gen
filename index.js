@@ -72,6 +72,12 @@
             
             // AppResources = JSON.parse(fs.readFileSync(locationAppJson, { encoding: 'utf8' }));
             AppResources = require(locationAppJson);
+            AppResources.defaultFolders = [
+                AppResources.appConfigFolder || '_appconfig',
+                AppResources.commonFolderName || 'common',
+                AppResources.appMainModuleName + '.js' || 'app.js'
+            ];
+            
             
         }
     
@@ -117,7 +123,7 @@
                     name = (Array.isArray(name)) ? name[0].replace(/[^\w]/, '') : name;
                     
                     var appFiles = [
-                        AppResources['angular-template'] + 'app.js',
+                        AppResources['angular-template'] + '' + AppResources.appMainModuleName + 'js',
                     ];
                     
                     /*console.log(name);
@@ -149,7 +155,7 @@
             gulp.task('gen:config', function () {
     
                 var configFiles = AppResources['angular-template'] + '*.config.js';
-                var configFolder = AppResources.appName + '/_appconfig/';
+                var configFolder = AppResources.appName + '/' + AppResources.appConfigFolder + '/';
                 var isDir = fs.existsSync(AppResources.appFolder + configFolder);
     
                 if (!isDir) {
@@ -160,7 +166,7 @@
                         .pipe(gulp.dest(AppResources.appFolder));
                     console.log(gulpGenPrefix + 'The configuartion folder it\'s ready!.');
                 } else {
-                    console.warn(gulpGenPrefix + 'The folder _appconfig/ all ready exists.');
+                    console.warn(gulpGenPrefix + 'The folder ' + AppResources.appConfigFolder + '/ all ready exists.');
                     process.exit();
                 }
             });
@@ -191,7 +197,7 @@
                                 name.substr((camel + 1), name.length).charAt(0).toLocaleUpperCase() +
                                 name.substr((camel + 1), name.length).slice(1);
                         }
-                        var mainFileModule = AppResources.appFolder + AppResources.appName + '/' + (AppResources.mainAppFileName || 'app.js');
+                        var mainFileModule = AppResources.appFolder + AppResources.appName + '/' + (AppResources.mainAppFileName || '' + AppResources.appMainModuleName + 'js');
                         // console.log(mainFileModule);
                         // process.exit();
                         if(fs.existsSync(mainFileModule)){    
@@ -269,7 +275,7 @@
                                 console.log(gulpGenPrefix + 'The ' + moduleName + ' is already injected!.');
                             }
                         }else{
-                            console.warn(gulpGenPrefix + '\n Make sure that the root file for the application in \"' + appDirectory + '\" directory is called the same as the folder application name. if not please use the \"mainAppFileName"\ property in app.json to put the name for this main application file.\n' );
+                            console.warn(gulpGenPrefix + '\n Make sure that the root file for the application in \"' + appDirectory + '\" directory is called the same as the folder application name. if not please use the \"mainAppFileName"\ property in ' + AppResources.appMainModuleName + 'json to put the name for this main application file.\n' );
                             process.exit();
                         }
                     } else {
@@ -315,7 +321,7 @@
                             subModule.substr((camelSubModulo + 1), subModule.length).slice(1);
                     }
     
-                    var mainModule = fs.readFileSync(AppResources.appFolder + AppResources.appName + '/app.js', 'utf8').match(/module\('(.*)'/)[1];
+                    var mainModule = fs.readFileSync(AppResources.appFolder + AppResources.appName + '/' + AppResources.appMainModuleName + 'js', 'utf8').match(/module\('(.*)'/)[1];
                     var moduleName = mainModule + '.' + name;
                     var subModuleUpper = subModule.charAt(0).toUpperCase() + subModule.slice(1);
     
@@ -618,11 +624,11 @@
                 var injectSass = [];
                 var injectsLibs = [];
                 var injectScripts = [];
-                var injectsApp = AppResources.appFolder + AppResources.appName + '/app.js';
-                var injectsCommon = AppResources.appFolder + AppResources.appName + '/common/*.js';
-                var injectsComponents = AppResources.appFolder + AppResources.appName + '/common/**/*.directive.js';
+                var injectsApp = AppResources.appFolder + AppResources.appName + '/' + AppResources.appMainModuleName + 'js';
+                var injectsCommon = AppResources.appFolder + AppResources.appName + '/' + AppResources.commonFolderName + '/*.js';
+                var injectsComponents = AppResources.appFolder + AppResources.appName + '/' + AppResources.commonFolderName + '/**/*.directive.js';
                 var injectsModule = [
-                    AppResources.appFolder + AppResources.appName + '/_appconfig/*.js',
+                    AppResources.appFolder + AppResources.appName + '/' + AppResources.appConfigFolder + '/*.js',
                     AppResources.appFolder + AppResources.appName + '/**/*.module.js',
                     AppResources.appFolder + AppResources.appName + '/**/*.routes.js'
                 ];
@@ -643,9 +649,10 @@
 
                     for (var i = 0; i < AppResources.ignoreModuleInject.length; i++) {
 
-                        var isNotModule = /\..*$/i.test(AppResources.ignoreModuleInject);
-                        var endPath = (isNotModule) ? '' : '/*';
-                        var ignore = '!' + develop + AppResources.appName + '/' + AppResources.ignoreModuleInject + endPath;
+                        var isNotModule = /\..*$/i.test(AppResources.ignoreModuleInject[i]);
+                        //var endPath = (isNotModule) ? '' : '/*';
+                        var ignore = '!' + develop + AppResources.appName + '/' + AppResources.ignoreModuleInject[i];
+
                         injectsApp.push(ignore);
                         injectsCommon.push(ignore);
                         injectsComponents.push(ignore);
@@ -765,12 +772,41 @@
                 gulp.watch(reloadWhenChange).on('change', browserSync.reload);
             });
 
+            gulp.task(AppResources.appName + ':publish', function () {
+                var task;
+                var enviroments = AppResources.enviroments;
+                var argEnviroment = process.argv.pop().replace(/-/g, '');
+                    argEnviroment = (!enviroments[argEnviroment]) ? 'local' : argEnviroment;
+            
+                if (enviroments[argEnviroment]) {
+            
+                    var destConfigApp = AppResources.appFolder + AppResources.appName + '/_app.config/';
+                    var configApp = AppResources.config_file || destConfigApp + 'routes.config.js';
+                    var esArchivoApp = fs.existsSync(configApp);
+            
+
+                    if (esArchivoApp) {
+                        task = gulp.src(configApp);
+                        
+                        for(var i in enviroments[argEnviroment]){
+                            var itemValue = enviroments[argEnviroment][i];
+                            task.pipe(injectStr.replace( i +"(\s+)?:.+", i +': "' + itemValue + '",'));
+                        }
+            
+                        task.pipe(gulp.dest(destConfigApp));
+                    } else {
+                        console.info(gulpGenPrefix + 'No se pudo encontrar el archivo ' + configApp);
+                    }
+                    return task;
+                }
+            });
+
             gulp.task(AppResources.appName + ':build', [AppResources.appName + ':publish'], function () {
                 var commentsRegexp = /<!--Uncomment Dist-->([\s\S]*?)<!--([\s\S]*?)-->([\s\S]*?)<!--End:Uncomment Dist-->/g;
                 var removeRegex = /<!--Remove Dist-->([\s\S]*?)<!--End:Remove Dist-->/g;
                 var versionRegex = '{{version}}';
             
-                var appAll = [AppResources.appFolder + AppResources.buildFolder + 'app/' + config.appdest];
+                //var appAll = [AppResources.appFolder + AppResources.buildFolder + 'app/' + config.appdest];
             
                 var others = AppResources.injectThirdApp;
                     others.concat([
@@ -795,35 +831,33 @@
                     AppResources.appFolder + AppResources.appName + '/**/*.html',
                 ];
             
-                var sources = appAll.concat(others);
-                sources = sources.concat(appfiles);
-            
+                var sources = others.concat(appfiles);
+            //optimizing js files
                 var task = gulp.src(sources);
-                task.pipe(concat(config.appdest))
-                    .pipe(uglify()).on('error', function (e) { console.log(e); })
-                    .pipe(gulp.dest(AppResources.buildFolder + 'app/'));
-            
-                task = gulp.src(appViews);
-                task.pipe(htmlmin());
-                task.pipe(gulp.dest(function (file) {
-                    var buildPath = file.base.replace(AppResources.appName, AppResources.buildFolder + 'app/');
-                    buildPath = buildPath.replace('_directivas', AppResources.buildFolder + 'app/directivas');
-                    buildPath = buildPath.replace(/\//g, '\u005c');
-            
-                    return buildPath;
-                }));
-            
-                task = gulp.src(AppResources.buildFolder + 'index.html');
-                task.pipe(injectStr.replace(removeRegex, ''))
-                    .pipe(injectStr.replace(commentsRegexp, '$2'))
-                    .pipe(injectStr.replace(versionRegex, Date.parse(new Date())))
-                    .pipe(gulp.dest(AppResources.buildFolder));
+                    task.pipe(concat(config.appdest))
+                        .pipe(uglify()).on('error', function (e) { console.log(e); })
+                        .pipe(gulp.dest(AppResources.buildFolder + 'app/'));
+
+                    //injecting resources optimized
+                        task = gulp.src(AppResources.buildFolder + 'index.html');
+                        task.pipe(injectStr.replace(removeRegex, ''))
+                            .pipe(injectStr.replace(commentsRegexp, '$2'))
+                            .pipe(injectStr.replace(versionRegex, Date.parse(new Date())))
+                            .pipe(gulp.dest(AppResources.buildFolder));
+
+                    //optimizing html files    
+                        task = gulp.src(appViews);
+                        task.pipe(htmlmin());
+                        task.pipe(gulp.dest(function (file) {
+                            var buildPath = file.base.replace(AppResources.appName, AppResources.buildFolder + 'app/');
+                            buildPath = buildPath.replace('_directivas', AppResources.buildFolder + 'app/directivas');
+                            buildPath = buildPath.replace(/\//g, '\u005c');
+                
+                            return buildPath;
+                        }));
             
                 return task;
             });
-            
-
-            
         };
         
         module.exports = gulpGen;
