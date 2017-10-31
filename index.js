@@ -141,7 +141,7 @@
                             .pipe(gulp.dest(AppResources.appFolder));
                         console.log(gulpGenPrefix + 'Angular app folder ready!.');
                     } else {
-                        console.warn( gulpGenPrefix + 'The folder' + AppResources.appName + ' all ready exists.');
+                        console.warn( gulpGenPrefix + 'The folder ' + AppResources.appName + ' all ready exists.');
                         console.warn( gulpGenPrefix + 'Please, change the name of the app with the property "appName" in "app.json" configuration file located in ' + appDirectory );
                         process.exit();
                     }
