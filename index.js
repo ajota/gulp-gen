@@ -17,6 +17,7 @@
         var htmlmin = require('gulp-htmlmin');
         var uglify =  require('gulp-uglify');
         var injectStr = require('gulp-inject-string');
+        var replace = require('gulp-replace');
         var browserSync = require('browser-sync').create();
     
         //globals
@@ -201,7 +202,8 @@
                         // console.log(mainFileModule);
                         // process.exit();
                         if(fs.existsSync(mainFileModule)){    
-                            var mainModule = fs.readFileSync(mainFileModule, 'utf8').match(/module\('(.*)'/)[1];
+                            var fileModule = fs.readFileSync(mainFileModule, 'utf8');
+                            var mainModule = fileModule.toString().match(/module\('(.*)'/)[1];
                             var moduleName = mainModule + '.' + name;
                             var hasModule = (new RegExp('\'' + moduleName + '\',', 'i')).test(fs.readFileSync(mainFileModule, 'utf8'));
     
@@ -245,15 +247,15 @@
                                     .pipe(gulp.dest(AppResources.appFolder + moduleFolder));
     
                                 task = gulp.src(moduleFiles)
-                                    .pipe(ejs(options, { ext: '.js' }))
-                                    .pipe(rename({ dirname: moduleFolder, prefix: originalName + '.' }))
-                                    .pipe(gulp.dest(AppResources.appFolder));
-                                setTimeout(function () {
-                                    tasksData = options;
-                                    gulp.start('inject');
-                                    gulp.start('inject:route');
-                                }, 2000);
-    
+                                           .pipe(ejs(options, { ext: '.js' }))
+                                           .pipe(rename({ dirname: moduleFolder, prefix: originalName + '.' }))
+                                           .pipe(gulp.dest(AppResources.appFolder));
+                                           setTimeout(function () {
+                                               tasksData = options;
+                                               gulp.start('inject');
+                                               gulp.start('inject:route');
+                                           }, 2000);
+        
                                 console.log(gulpGenPrefix + 'The ' + originalName + '/ folder it\'s ready!.');
                             } else {
                                 console.warn(gulpGenPrefix + 'It is not posible create the module ' + originalName + '/');
@@ -264,9 +266,12 @@
                             process.exit();*/
                             if (!hasModule) {
                                 console.log(gulpGenPrefix + 'Injecting the module name in' + mainFileModule + ' main file...');
-    
+                                var hasNotColen = /[\"\']([\r\n\s]+)\/\*@endCustomModule/g.test(fileModule);
+
+                                var moduleRegex = (hasNotColen) ? /[\"\']([\r\n\s]+)\/\*@endCustomModule/g : /[\"\']([\r\n\s]+)\/\*@endCustomModule/g ;
+
                                 task = gulp.src(mainFileModule)
-                                    .pipe(injectStr.before('\/\*@endCustomModule\*\/', '\'' + moduleName + '\',\n            '))
+                                    .pipe(replace(moduleRegex, '\',$1\'' + moduleName + '$&'))
                                     .pipe(gulp.dest(AppResources.appFolder + AppResources.appName));
     
                                 console.log(gulpGenPrefix + 'The ' + moduleName + ' has been injected!.');
@@ -755,29 +760,29 @@
                     var routesFile = 'routes.config.js';
                     var routesConfig = routesFolder + routesFile;
                     var routesContent = fs.readFileSync(routesConfig);
-            
+                    
                     var isRoutes = /\'SITE_ROUTES\'/i.test(routesContent);
-                    var routesHasNotColen = /.+:\s{0,}('.*'|".*")[^].+\/\*@endRoutes\*\//g.test(routesContent);
-                    var urlHasNotColen = /.+:\s{0,}('.*'|".*")[^].+\/\*@endUrls\*\//g.test(routesContent);
-            
-            
+                    var routesHasNotColen = /\'([\r\n\s]+)\/\*@endRoutes/g.test(routesContent.toString());
+                    var urlHasNotColen = /\'([\r\n\s]+)\/\*@endUrls/g.test(routesContent.toString());
+                    
+                    
                     if (isRoutes) {
                         //TODO: Probar tarea de injeccion de route
-                        var hasRoute = (new RegExp('\\b' + tasksData.viewName + '\\b', 'ig')).test(routesContent);
-
+                        var hasRoute = (new RegExp('\\b' + tasksData.viewName + '\\b', 'ig')).test(routesContent.toString());
+                        
+     
                         if (!hasRoute) {
                             //please doesn't clean the whitespaces that is needed for indention
-                            /*console.log(routesHasNotColen);
-                            console.log(urlHasNotColen);*/
-                            
-                            var endRoutesStr = '\',\n                \/\*@endRoutes\*\/';
-                            var endUrlStr = '\',\n                \/\*@endUrls\*\/';
-                            var beginRouteStr = (!routesHasNotColen)? '' : ',\n                ';
-                            var beginUrlStr = (!urlHasNotColen)? '' : ',\n                ';
+                            console.log(routesHasNotColen);
+                            console.log(urlHasNotColen);
 
+                            var routeRegex = (routesHasNotColen)? /[\"\']([\r\n\s]+)\/\*@endRoutes/g : /[\"\'],([\r\n\s]+)\/\*@endRoutes/g;
+                            var urlRegex = (urlHasNotColen)? /[\"\']([\r\n\s]+)\/\*@endUrls/g : /[\"\'],([\r\n\s]+)\/\*@endUrls/g;
+                            
+                            
                             var task = gulp.src(routesConfig)
-                                .pipe(injectStr.replace('[^].+\/\*@endRoutes\*\/', beginRouteStr + tasksData.viewName + ': \'' + tasksData.viewName + endRoutesStr))
-                                .pipe(injectStr.replace('[^].+\/\*@endUrls\*\/', beginUrlStr + tasksData.viewName + ': \'/' + tasksData.viewName + endUrlStr))
+                                .pipe(replace(routeRegex, '\',$1' + tasksData.viewName + ': \'' + tasksData.viewName + '$&'))
+                                .pipe(replace(urlRegex, '\',$1' + tasksData.viewName + ': \'/' + tasksData.viewName + '$&'))
                                 .pipe(gulp.dest(routesFolder));
                             tasksData = {};
                             return task;
