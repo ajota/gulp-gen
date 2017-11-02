@@ -152,6 +152,14 @@ This command create a routes file with the name provided in the first argument i
     
 This command create a directive file with the name provided in the argument inside the common folder into a directory called "components" if this folder does not exist this command will create it.
 
+## Release Notes:
+
+- 1.1.0
+    - Some adjustments and improvemenst, resolving some bugs with gulp basic tasks
+    
+- 1.0.0 
+    - Added Gup gen basic tasks to create an angular app
+    - Adding documentation for develeopment process using this plugin.
 ## Pending features in mind:
 | Feature | Status |
 |-|-|
