@@ -12,6 +12,15 @@
     "commonFolderName": "common",
     "appConfigFolder": "_appconfig",
 
+    "injectThirdApp": [],
+    "ignoreModuleInject": [],
+    "reloadWhenChange": [
+        "*.html",
+        "./**/*.html",
+        "./app/*.js",
+        "./app/**/*.js"
+    ],
+
     "enviroments": {
         "local":{
             "local_url": "app/"
