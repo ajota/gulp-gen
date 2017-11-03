@@ -13,6 +13,7 @@
   "author": "Anderson Velez",
   "license": "ISC",
   "dependencies": {
+    "bower":"^1.8.2",
     "browser-sync": "^2.18.13",
     "gulp-concat": "^2.6.0",
     "gulp-ejs": "^3.0.1",

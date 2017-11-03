@@ -76,6 +76,10 @@ The Gulp Gen generator use the Jhon Papa's methodology described in "Angular s
 
         gulp --tasks
 
+5. Install Bower (javascript package manager).
+
+        npm install bower
+
 ## Settings: 
  
 To generate an application directory is necessary to know that the name for this folder will be created by default with the name "app", but it could be changed from the "app.json" settings file that should has been created after you run the "gulp gen" initial command.
