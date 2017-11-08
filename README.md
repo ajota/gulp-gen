@@ -186,7 +186,7 @@ This command create a directive file with the name provided in the argument insi
 
 
 ## Release Notes:
-- 1.2.7, 1.2.8, 1.2.9
+- 1.2.7, 1.2.8, 1.2.9, 1.2.10
     - BUG Fixed: Change in app.json file template to contain the correctly property "mainAppModuleName"
     - BUG Fixed: Changes in enviroments property parameters into app.json file.
     
