@@ -222,7 +222,7 @@
                                 name.substr((camel + 1), name.length).charAt(0).toLocaleUpperCase() +
                                 name.substr((camel + 1), name.length).slice(1);
                         }
-                        var mainFileModule = AppResources.appFolder + AppResources.appName + '/' + (AppResources.mainAppFileName || '' + AppResources.mainAppModuleName + '.js');
+                        var mainFileModule = AppResources.appFolder + AppResources.appName + '/' + (AppResources.mainAppFileName || AppResources.mainAppModuleName + '.js');
                         // console.log(mainFileModule);
                         // process.exit();
                         if(fs.existsSync(mainFileModule)){    
@@ -276,8 +276,8 @@
                                            .pipe(gulp.dest(AppResources.appFolder));
                                            setTimeout(function () {
                                                tasksData = options;
-                                               gulp.start('inject');
-                                               gulp.start('inject:route');
+                                               gulp.start('gen:inject');
+                                               gulp.start('gen:inject:route');
                                            }, 2000);
         
                                 console.log(gulpGenPrefix + 'The ' + originalName + '/ folder it\'s ready!.');
@@ -286,17 +286,16 @@
                                 console.warn(gulpGenPrefix + 'Please, Make sure that the ' + AppResources.appName + ' folder it\'s  all ready created.');
                                 console.warn(gulpGenPrefix + 'Also, Make sure that the ' + originalName + '/ module folder was not created yet.');
                             }
-                            /*console.log('se crea el modulo');
-                            process.exit();*/
                             if (!hasModule) {
                                 console.log(gulpGenPrefix + 'Injecting the module name in' + mainFileModule + ' main file...');
-                                var hasNotColen = /[\"\']([\r\n\s]+)\/\*@endCustomModule/g.test(fileModule);
+                                
+                                var hasNotColen = /[\"\']([\r\n\s]+)\/\*@endCustomModule/g.test(fileModule.toString());
 
-                                var moduleRegex = (hasNotColen) ? /[\"\']([\r\n\s]+)\/\*@endCustomModule/g : /[\"\']([\r\n\s]+)\/\*@endCustomModule/g ;
+                                var moduleRegex = (hasNotColen) ? /[\"\']([\r\n\s]+)\/\*@endCustomModule/g : /[\"\'],([\r\n\s]+)\/\*@endCustomModule/g ;
 
                                 task = gulp.src(mainFileModule)
                                     .pipe(replace(moduleRegex, '\',$1\'' + moduleName + '$&'))
-                                    .pipe(gulp.dest(AppResources.appFolder + AppResources.appName));
+                                    .pipe(gulp.dest(AppResources.appFolder + AppResources.appName + '/'));
     
                                 console.log(gulpGenPrefix + 'The ' + moduleName + ' has been injected!.');
                                 return task;
@@ -623,7 +622,7 @@
                             .pipe(rename({ dirname: 'components', prefix: directivefileName + '.' }))
                             .pipe(gulp.dest(AppResources.appFolder + commonFolder));
                         setTimeout(function () {
-                            gulp.start('inject');
+                            gulp.start('gen:inject');
                         }, 2000);
     
                         console.log(gulpGenPrefix + 'The ' + directiveName + ' component it\'s ready!.');
@@ -639,38 +638,36 @@
                 }
             });
 
-            gulp.task('inject', ['inject:generals'], function(){
+            gulp.task('gen:inject', ['gen:inject:generals'], function(){
 
                 //Default properties
                 AppResources.ignoreModuleInject = AppResources.ignoreModuleInject || [];
                 //
                 var ignoreInjects = [];
                 var resources = AppResources.common_bower.scripts || [];
+                var resourcesCss = AppResources.common_bower.styles || [];
                 var cssFolder = AppResources.mainFolders.styles || [];
                 var scripts = AppResources.mainFolders.scripts || [];
-                var styles = AppResources.custom_styles || [];
+
                 var customScripts = AppResources.custom_scripts || [];
+                var customStyles = AppResources.custom_styles || [];
                 
-                var injectsThird = [];
+                var injectsThird = AppResources.injectThirdApp || [];
                 var injectCss = [];
                 var injectSass = [];
                 var injectsLibs = [];
                 var injectScripts = [];
-                var injectsApp = AppResources.appName + '/' + (AppResources.mainAppModuleName || AppResources.appName ) + 'js';
-                var injectsCommon = AppResources.appName + '/' + AppResources.commonFolderName + '/*.js';
-                var injectsComponents = AppResources.appName + '/' + AppResources.commonFolderName + '/**/*.directive.js';
+                var injectsApp = AppResources.appFolder + AppResources.appName + '/' + (AppResources.appMainModuleName || AppResources.appName ) + '.js';
+                var injectsCommon = AppResources.appFolder + AppResources.appName + '/' + AppResources.commonFolderName + '/*.js';
+                var injectsComponents = AppResources.appFolder + AppResources.appName + '/' + AppResources.commonFolderName + '/**/*.directive.js';
                 var injectsModule = [
-                    AppResources.appName + '/' + AppResources.appConfigFolder + '/*.js',
-                    AppResources.appName + '/**/*.module.js',
-                    AppResources.appName + '/**/*.routes.js'
+                    AppResources.appFolder + AppResources.appName + '/' + AppResources.appConfigFolder + '/*.js',
+                    AppResources.appFolder + AppResources.appName + '/**/*.module.js',
+                    AppResources.appFolder + AppResources.appName + '/**/*.routes.js'
                 ];
                 var injectsFactory = AppResources.appFolder + AppResources.appName + '/**/*.factory.js';
                 var injectsControllers = AppResources.appFolder + AppResources.appName + '/**/*.controller.js';   
                 
-                //thirdy part app module
-                if (AppResources.injectThirdApp) {
-                    injectsThird = AppResources.injectThirdApp;
-                }
                 //if a ignore path is set into app.json "ignoreModuleInject" property.
                 if (AppResources.ignoreModuleInject && AppResources.ignoreModuleInject.length > 0) {
                     injectsApp = [injectsApp];
@@ -683,7 +680,7 @@
 
                         var isNotModule = /\..*$/i.test(AppResources.ignoreModuleInject[i]);
                         //var endPath = (isNotModule) ? '' : '/*';
-                        var ignore = '!' + develop + AppResources.appName + '/' + AppResources.ignoreModuleInject[i];
+                        var ignore = '!' + AppResources.appFolder + AppResources.appName + '/' + AppResources.ignoreModuleInject[i];
 
                         injectsApp.push(ignore);
                         injectsCommon.push(ignore);
@@ -691,42 +688,77 @@
                         injectsFactory.push(ignore);
                         injectsControllers.push(ignore);
                         injectsModule.push(ignore);
+                        injectScripts.push(ignore);
+                        injectsLibs.push(ignore);
+                        injectsThird.push(ignore);
                     }
                 }
-
-                customScripts.forEach(function (item) {
-                    var fileRoute = scripts + item;
-                    var isSetRoute = injectScripts.indexOf(fileRoute);
-                    if(isSetRoute >= 0){
-                        injectScripts.splice(isSetRoute,1);
-                    }
-                    injectScripts.push(fileRoute);
-                });
                 
+                injectScripts.push(scripts + '*.js');
+                injectScripts = injectScripts.concat(customScripts);
                 
-                styles.forEach(function (item) {
-                    var fileRoute = cssFolder + item;
-                    var isSetRoute = injectCss.indexOf(fileRoute);
+                resourcesCss.forEach(function(item){
+                    var fileRoute = cssFolder +'libs/' + item;
+                    var isSetRouteCss = injectCss.indexOf(fileRoute);
+                    var isSetRouteSass = injectSass.indexOf(fileRoute);
                     var ext = fileRoute.split('.').pop();
                     
-                    if(isSetRoute >= 0){
-                        injectCss.splice(isSetRoute,1);
-                    }
                     if(ext.search(/sass|scss|less/g) >= 0){
+                        if(isSetRouteSass >= 0){
+                            injectSass.splice(isSetRouteSass,1);
+                        }
                         injectSass.push(fileRoute);
                     }else{
+                        if(isSetRouteCss >= 0){
+                            injectCss.splice(isSetRouteCss,1);
+                        }
                         injectCss.push(fileRoute);
                     }
                 });
-
+                
+                customStyles.forEach(function(item){
+                    var fileRoute = item;
+                    var isSetRouteCss = injectCss.indexOf(fileRoute);
+                    var isSetRouteSass = injectSass.indexOf(fileRoute);
+                    var ext = fileRoute.split('.').pop();
+                    
+                    if(ext.search(/sass|scss|less/g) >= 0){
+                        if(isSetRouteSass >= 0){
+                            injectSass.splice(isSetRouteSass,1);
+                        }
+                        injectSass.push(fileRoute);
+                    }else{
+                        if(isSetRouteCss >= 0){
+                            injectCss.splice(isSetRouteCss,1);
+                        }
+                        injectCss.push(fileRoute);
+                    }
+                });
+                //inject default css
+                injectCss.push(cssFolder + '*.css');
+                injectCss = injectCss.concat(customStyles);
+                
+                
+                //inject  default pre-compilers
+                injectSass.push(cssFolder + '*.sass');
+                injectSass.push(cssFolder + '*.scss');
+                injectSass.push(cssFolder + '*.less');
+                
                 resources.forEach(function(item){
-                    injectsLibs.push( scripts + 'libs/' + item);
+                    scripts = scripts.replace(AppResources.appFolder, '');
+                    
+                    injectsLibs.push( AppResources.appFolder + scripts + 'libs/' + item);
                 });
                 
+                // process.exit();
                 gulp.src(AppResources.appFolder + '/index.html')
                     .pipe(inject(
                         gulp.src(injectsLibs, {read:false}), 
-                        {relative:true}
+                        {relative: true}
+                    ))
+                    .pipe(inject(
+                        gulp.src(injectCss, {read:false}), 
+                        {relative: true}
                     ))
                     .pipe(inject(
                         gulp.src(injectsThird, { read: false }),
@@ -741,14 +773,10 @@
                         {   starttag:'<!--inject:sass-->',
                             endtag:'<!--endinject-->',
                             transform: function (filepath) {
-                                return '<link rel="stylesheet" type="text/css" href="'+filepath+'">';
+                                return '<link rel="stylesheet" href="'+filepath+'">';
                             },
                             relative:true
                         }
-                    ))
-                    .pipe(inject(
-                        gulp.src(injectCss, {read:false}),
-                        {relative:true}
                     ))
                     .pipe(inject(
                         gulp.src(injectsApp, {read:false}),
@@ -777,7 +805,7 @@
                     .pipe(gulp.dest(AppResources.appFolder));
             });
 
-            gulp.task('inject:route', function () {
+            gulp.task('gen:inject:route', function () {
                 if (tasksData.viewName) {
                     var routesFolder = AppResources.appFolder + AppResources.appName + '/' + AppResources.appConfigFolder + '/';
                     var routesFile = 'routes.config.js';
@@ -785,8 +813,9 @@
                     var routesContent = fs.readFileSync(routesConfig);
                     
                     var isRoutes = /\'SITE_ROUTES\'/i.test(routesContent);
-                    var routesHasNotColen = /\'([\r\n\s]+)\/\*@endRoutes/g.test(routesContent.toString());
-                    var urlHasNotColen = /\'([\r\n\s]+)\/\*@endUrls/g.test(routesContent.toString());
+                    var isInitial = /[\/\/].*([\r\n\s]+)\/\*@endRoutes/i.test(routesContent);
+                    var routesHasNotColen = /[\"\']([\r\n\s]+)\/\*@endRoutes/g.test(routesContent.toString());
+                    var urlHasNotColen = /[\"\']([\r\n\s]+)\/\*@endUrls/g.test(routesContent.toString());
                     
                     
                     if (isRoutes) {
@@ -796,19 +825,26 @@
      
                         if (!hasRoute) {
                             //please doesn't clean the whitespaces that is needed for indention
-                            console.log(routesHasNotColen);
-                            console.log(urlHasNotColen);
-
-                            var routeRegex = (routesHasNotColen)? /[\"\']([\r\n\s]+)\/\*@endRoutes/g : /[\"\'],([\r\n\s]+)\/\*@endRoutes/g;
-                            var urlRegex = (urlHasNotColen)? /[\"\']([\r\n\s]+)\/\*@endUrls/g : /[\"\'],([\r\n\s]+)\/\*@endUrls/g;
-                            
-                            
-                            var task = gulp.src(routesConfig)
-                                .pipe(replace(routeRegex, '\',$1' + tasksData.viewName + ': \'' + tasksData.viewName + '$&'))
-                                .pipe(replace(urlRegex, '\',$1' + tasksData.viewName + ': \'/' + tasksData.viewName + '$&'))
-                                .pipe(gulp.dest(routesFolder));
-                            tasksData = {};
-                            return task;
+                            console.log(isInitial+'\n');
+                            if(isInitial){
+                                var task = gulp.src(routesConfig)
+                                    .pipe(replace(/(.*[^])(\/\*@endRoutes\*\/)/g, '$1'+tasksData.viewName+': \''+tasksData.viewName+'\',\n$1$2'))
+                                    .pipe(replace(/(.*[^])(\/\*@endUrls\*\/)/g, '$1'+tasksData.viewName+': \'/'+tasksData.viewName+'\',\n$1$2'))
+                                    .pipe(gulp.dest(routesFolder));
+                                    tasksData = {};
+                                return task;
+                            }else{
+                                var routeRegex = (routesHasNotColen)? /[\"\']([\r\n\s]+)\/\*@endRoutes/g : /[\"\'],([\r\n\s]+)\/\*@endRoutes/g;
+                                var urlRegex = (urlHasNotColen)? /[\"\']([\r\n\s]+)\/\*@endUrls/g : /[\"\'],([\r\n\s]+)\/\*@endUrls/g;
+                                
+                                
+                                var task = gulp.src(routesConfig)
+                                    .pipe(replace(routeRegex, '\',$1' + tasksData.viewName + ': \'' + tasksData.viewName + '$&'))
+                                    .pipe(replace(urlRegex, '\',$1' + tasksData.viewName + ': \'/' + tasksData.viewName + '$&'))
+                                    .pipe(gulp.dest(routesFolder));
+                                    tasksData = {};
+                                return task;
+                            }
                         } else {
                             console.info(gulpGenPrefix + 'The route "' + tasksData.viewName + '" has been already created');
                         }
@@ -818,7 +854,7 @@
                 }
             });
 
-            gulp.task('inject:generals', function () {
+            gulp.task('gen:inject:generals', function () {
                 
                 var styles = [],
                     scripts = [],
@@ -857,15 +893,15 @@
                     .pipe(gulp.dest(copyToApplication.scripts));
             });
 
-            gulp.task('server', function () {
-                return gulp.start(AppResources.appName + ':server-reload');
+            gulp.task('gen:server', function () {
+                return gulp.start('gen:' + AppResources.appName + ':server-reload');
             });
             
-            gulp.task('build', function () {
-                return gulp.start(AppResources.appName + ':build');
+            gulp.task('gen:build', function () {
+                return gulp.start('gen:' + AppResources.appName + ':build');
             });
             
-            gulp.task(AppResources.appName + ':server-reload', function () {
+            gulp.task('gen:' + AppResources.appName + ':server-reload', function () {
                 var reloadWhenChange = AppResources.reloadWhenChange;
                 var browserConfig = {
                     server: "./",
@@ -880,7 +916,7 @@
                 gulp.watch(reloadWhenChange).on('change', browserSync.reload);
             });
 
-            gulp.task(AppResources.appName + ':publish', function () {
+            gulp.task('gen:' + AppResources.appName + ':publish', function () {
                 var task;
                 var enviroments = AppResources.enviroments;
                 var argEnviroment = process.argv.pop().replace(/-/g, '');
@@ -909,7 +945,7 @@
                 }
             });
 
-            gulp.task(AppResources.appName + ':build', [AppResources.appName + ':publish'], function () {
+            gulp.task('gen:' + AppResources.appName + ':build', ['gen:' + AppResources.appName + ':publish'], function () {
                 var commentsRegexp = /<!--Uncomment Dist-->([\s\S]*?)<!--([\s\S]*?)-->([\s\S]*?)<!--End:Uncomment Dist-->/g;
                 var removeRegex = /<!--Remove Dist-->([\s\S]*?)<!--End:Remove Dist-->/g;
                 var versionRegex = '{{version}}';
@@ -940,7 +976,7 @@
                 ];
             
                 var sources = others.concat(appfiles);
-            //optimizing js files
+                //optimizing js files
                 var task = gulp.src(sources);
                     task.pipe(concat(config.appdest))
                         .pipe(uglify()).on('error', function (e) { console.log(e); })
