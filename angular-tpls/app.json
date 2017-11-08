@@ -8,7 +8,7 @@
     "ignoreModuleInject":[],
     "reloadWhenChange": ["*.html", "./**/*.html", "./app/*.js", "./app/**/*.js"],
 
-    "appMainModuleName": "app",
+    "mainAppModuleName": "app",
     "commonFolderName": "common",
     "appConfigFolder": "_appconfig",
 
