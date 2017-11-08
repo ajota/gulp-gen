@@ -152,7 +152,34 @@ This command create a routes file with the name provided in the first argument i
     
 This command create a directive file with the name provided in the argument inside the common folder into a directory called "components" if this folder does not exist this command will create it.
 
+## Inject app files in index.html: 
+    gulp gen:inject  
+
+## launch a testing Server: 
+    gulp gen:server  
+
+## Generate a distribution folder: 
+    gulp gen:build -[enviroment]
+
+    (Important: this command depends on the parameters wroted into the property enviroments located in the app.json file, the [enviroment] default variables are local, develop, production )
+
+    Examples:
+        - To genera a distribution folder and run the site with a local test configuration profile, use:
+            gulp gen:build -local
+        - To genera a distribution folder and run the site with a develop test configuration profile in local use:
+            gulp gen:build -develop
+        - To genera a distribution folder and run the site with a production test configuration profile in local use:
+            gulp gen:build -production
+
+
+
 ## Release Notes:
+- 1.2.0
+    - Added site generator helper.
+    - Added enviroments profiles (building profiles).
+        *This task generate the distribution folder ready to a public publishing
+    - Added automatically file injection.
+    - Added server launch.
 
 - 1.1.0
     - Some adjustments and improvemenst, resolving some bugs with gulp basic tasks
@@ -160,6 +187,7 @@ This command create a directive file with the name provided in the argument insi
 - 1.0.0 
     - Added Gup gen basic tasks to create an angular app
     - Adding documentation for develeopment process using this plugin.
+
 ## Pending features in mind:
 | Feature | Status |
 |-|-|
