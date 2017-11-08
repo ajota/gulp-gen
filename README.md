@@ -187,7 +187,8 @@ This command create a directive file with the name provided in the argument insi
 
 ## Release Notes:
 - 1.2.7
-    - BUB Fixed: Change in app.json file template to contain the correctly property "mainAppModuleName"
+    - BUG Fixed: Change in app.json file template to contain the correctly property "mainAppModuleName"
+    - BUG Fixed: Changes in enviroments property parameters into app.json file.
     
 - 1.2.3, 1.2.4, 1.2.5, 1.2.6
     - BUG Fixed: Update documentation for gulp gen command
