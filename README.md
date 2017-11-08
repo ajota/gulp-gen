@@ -132,7 +132,8 @@ Folder Structure generated  with this command:
     - bower.json
     - instructions.md
 
-Note: As you can see there is a "bower.json" file, this document contains all the necessary angular dependencies, so you need to run the "bower install" command, before you start coding and testng. 
+Note: As you can see there is a "bower.json" file, this document contains all the necessary angular dependencies, so you need to run the "bower install" command, before you start coding and testng.
+
  ## Generate a module: 
         gulp gen:module -moduleName
 
@@ -185,8 +186,8 @@ This command create a directive file with the name provided in the argument insi
 
 
 ## Release Notes:
-- 1.2.3
-    - BUG Fixed: 
+- 1.2.3, 1.2.4
+    - BUG Fixed: Update documentation for gulp gen command
 
 - 1.2.2
     - BUG Fixed: Added some additional documentation
