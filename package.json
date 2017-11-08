@@ -1,6 +1,6 @@
 {
   "name": "gulp-gen",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "´Angular js app structure generator based on jhon papa recomendations and some aditional features.",
   "main": "index.js",
   "scripts": {
