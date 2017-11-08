@@ -60,7 +60,8 @@
     
             var cond1 = fs.existsSync(locationAppJson);
             if(!cond1 || reset){
-                
+                var cond2 = fs.existsSync(locationBower);
+
                 var instructions = fs.readFileSync(tplInstructions, { encoding: 'utf8' });
                 
                 var bower = fs.readFileSync(tplbower, { encoding: 'utf8' });
@@ -76,7 +77,9 @@
                     appJson.mainFolders.scripts = directory.appFolder + appJson.mainFolders.scripts;
                     appJson.mainFolders.images = directory.appFolder + appJson.mainFolders.images;
                 //create initial files 
-                fs.writeFileSync(locationBower, JSON.stringify(bower, null, 4));
+                if(!cond2){
+                    fs.writeFileSync(locationBower, JSON.stringify(bower, null, 4));
+                }
                 fs.writeFileSync(locationAppJson, JSON.stringify(appJson, null, 4));
                 fs.writeFileSync(locationInstructions, instructions);
             }

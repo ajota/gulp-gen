@@ -120,8 +120,19 @@ All the commands built in this plug-in hava a structure based on the following p
 ## Generar una app: 
     gulp gen 
 
-This command create a directory with the project base initial structure and takes his name from app.json settings file with the "appName" property value by default this value is "app".
+This command create a directory with all the project base initial structure (folders and files) into the the folder you specified into the gulp-gen instance. also this command create a folder that corresponds to a basic ancgular application this dierctory take his name from app.json settings file with the "appName" property value (by default this value is "app").
+    
+Folder Structure generated  with this command:
 
+    - app/
+    - images/
+    - styles/
+    - scripts/
+    - app.json
+    - bower.json
+    - instructions.md
+
+Note: As you can see there is a "bower.json" file, this document contains all the necessary angular dependencies, so you need to run the "bower install" command, before you start coding and testng. 
  ## Generate a module: 
         gulp gen:module -moduleName
 
@@ -174,6 +185,15 @@ This command create a directive file with the name provided in the argument insi
 
 
 ## Release Notes:
+- 1.2.3
+    - BUG Fixed: 
+
+- 1.2.2
+    - BUG Fixed: Added some additional documentation
+
+- 1.2.1
+    - BUG Fixed: Updated documentation with some new features
+
 - 1.2.0
     - Added site generator helper.
     - Added enviroments profiles (building profiles).
