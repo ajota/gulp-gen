@@ -186,7 +186,7 @@ This command create a directive file with the name provided in the argument insi
 
 
 ## Release Notes:
-- 1.2.3, 1.2.4
+- 1.2.3, 1.2.4, 1.2.5
     - BUG Fixed: Update documentation for gulp gen command
 
 - 1.2.2
