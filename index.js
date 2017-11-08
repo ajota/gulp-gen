@@ -722,8 +722,7 @@
                 resources.forEach(function(item){
                     injectsLibs.push( scripts + 'libs/' + item);
                 });
-                console.log(injectsLibs + '\n', injectsThird + '\n', injectScripts + '\n',injectCss + '\n', injectSass + '\n');
-                process.exit();
+                
                 gulp.src(AppResources.appFolder + '/index.html')
                     .pipe(inject(
                         gulp.src(injectsLibs, {read:false}), 
