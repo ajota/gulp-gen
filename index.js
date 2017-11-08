@@ -48,7 +48,7 @@
                 nDirectory = nDirectory + nUserDir;
             }
     
-            return {appAbsoluteFolder: nDirectory, appFolder: nUserDir };
+            return {appAbsoluteFolder: nDirectory || './', appFolder: nUserDir || './' };
         }
     
         function generateAppConfigFile (appDirectory, reset) {
@@ -72,7 +72,7 @@
                     //Adding settings for app.json file 
                     bower.name = appJson.appName;
                     //Adding settings for app.json file 
-                    appJson.appFolder = appDirectory;
+                    appJson.appFolder = appDirectory || './';
                     appJson.mainFolders.styles = directory.appFolder + appJson.mainFolders.styles;
                     appJson.mainFolders.scripts = directory.appFolder + appJson.mainFolders.scripts;
                     appJson.mainFolders.images = directory.appFolder + appJson.mainFolders.images;
