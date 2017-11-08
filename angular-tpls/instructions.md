@@ -186,6 +186,9 @@ This command create a directive file with the name provided in the argument insi
 
 
 ## Release Notes:
+- 1.2.12
+    - BUG Fixed: Module inject was not working.
+
 - 1.2.11
     - BUG Fixed: Adjustment in plugin to generate the application in a default folder when the directory is not present.
 
