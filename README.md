@@ -185,6 +185,9 @@ This command create a directive file with the name provided in the argument insi
             
 
 ## Release Notes:
+- 1.2.14
+    - BUG Fixed: adding the third app option injection into the index.html file.
+    
 - 1.2.13
     - BUG Fixed: build task had a mistake with the name of the file generated with all the app code in distribution folder.
     - BUG Fixed: inject task had problem when is necessary to ignore some files
