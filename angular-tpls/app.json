@@ -4,7 +4,10 @@
     "appFolder": "./",
 
     "buildFolder": "dist/",
+    
     "injectThirdApp": [],
+    "thirdConfigFile": [],
+
     "ignoreModuleInject":[],
     "reloadWhenChange": ["*.html", "./**/*.html", "./app/*.js", "./app/**/*.js"],
 

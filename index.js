@@ -926,20 +926,27 @@
             
                 if (enviroments[argEnviroment]) {
             
-                    var destConfigApp = AppResources.appFolder + AppResources.appName + '/_app.config/';
-                    var configApp = AppResources.config_file || destConfigApp + 'routes.config.js';
-                    var esArchivoApp = fs.existsSync(configApp);
-            
-
+                    var destConfigApp = AppResources.appFolder + AppResources.appName + '/' + (AppResources.appConfigFolder || '_app.config' )+ '/';
+                    var configApp = [AppResources.configFile || destConfigApp + 'resources.config.js'];
+                    var esArchivoApp = fs.existsSync(configApp[0]);
+                    
+                    if( AppResources.thirdConfigFile && AppResources.thirdConfigFile.length > 0 ){
+                        configApp.push.apply(configApp, AppResources.thirdConfigFile);
+                    }
                     if (esArchivoApp) {
                         task = gulp.src(configApp);
                         
                         for(var i in enviroments[argEnviroment]){
                             var itemValue = enviroments[argEnviroment][i];
-                            task.pipe(injectStr.replace( i +"(\s+)?:.+", i +': "' + itemValue + '",'));
+                            var regex = new RegExp(i +"(\s+)?:.+", 'i');
+                            
+                            task.pipe(replace(regex, i.toLocaleUpperCase() +': "' + itemValue + '",'));
                         }
-            
-                        task.pipe(gulp.dest(destConfigApp));
+                        
+                        task.pipe(gulp.dest(function(file){
+                            return file.base;
+                        }));
+                        
                     } else {
                         console.info(gulpGenPrefix + 'No se pudo encontrar el archivo ' + configApp);
                     }
@@ -951,6 +958,7 @@
                 var commentsRegexp = /<!--Uncomment Dist-->([\s\S]*?)<!--([\s\S]*?)-->([\s\S]*?)<!--End:Uncomment Dist-->/g;
                 var removeRegex = /<!--Remove Dist-->([\s\S]*?)<!--End:Remove Dist-->/g;
                 var versionRegex = '{{version}}';
+                var thirdFiles = AppResources.thirdConfigFile;
             
                 //var appAll = [AppResources.appFolder + AppResources.buildFolder + 'app/' + config.appdest];
             
