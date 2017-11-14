@@ -137,7 +137,7 @@ Note: As you can see there is a "bower.json" file, this document contains all th
  ## Generate a module: 
         gulp gen:module -moduleName
 
-This command create a directory into the app folder that should had created previously with all the files required in this kind of module.
+This command create a directory into the app folder that should had created previously with all the files required in this kind of module, also the module name and the route it's inject .
  
 ## Generate a submodule: (modulo hijo) 
         gulp gen:submodule -submoduleName -in -parentModuleName 
@@ -182,10 +182,13 @@ This command create a directive file with the name provided in the argument insi
             gulp gen:build -develop
         - To genera a distribution folder and run the site with a production test configuration profile in local use:
             gulp gen:build -production
-
-
+            
 
 ## Release Notes:
+- 1.2.13
+    - BUG Fixed: build task had a mistake with the name of the file generated with all the app code in distribution folder.
+    - BUG Fixed: inject task had problem when is necessary to ignore some files
+    
 - 1.2.12
     - BUG Fixed: Module inject was not working.
 
