@@ -686,11 +686,13 @@
                         injectsCommon.push(ignore);
                         injectsComponents.push(ignore);
                         injectsFactory.push(ignore);
-                        injectsControllers.push(ignore);
+                        injectsControllers.push(ignore);//--
                         injectsModule.push(ignore);
                         injectScripts.push(ignore);
                         injectsLibs.push(ignore);
-                        injectsThird.push(ignore);
+                        if(injectsThird.length > 0){
+                            injectsThird.push(ignore);
+                        }
                     }
                 }
                 
@@ -749,7 +751,7 @@
                     
                     injectsLibs.push( AppResources.appFolder + scripts + 'libs/' + item);
                 });
-                
+                // console.log(injectsThird);
                 // process.exit();
                 gulp.src(AppResources.appFolder + '/index.html')
                     .pipe(inject(
@@ -978,7 +980,7 @@
                 var sources = others.concat(appfiles);
                 //optimizing js files
                 var task = gulp.src(sources);
-                    task.pipe(concat(config.appdest))
+                    task.pipe(concat('app.js'))
                         .pipe(uglify()).on('error', function (e) { console.log(e); })
                         .pipe(gulp.dest(AppResources.buildFolder + 'app/'));
 
