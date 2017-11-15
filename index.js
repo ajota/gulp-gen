@@ -959,7 +959,8 @@
                 var removeRegex = /<!--Remove Dist-->([\s\S]*?)<!--End:Remove Dist-->/g;
                 var versionRegex = '{{version}}';
                 var thirdFiles = AppResources.thirdConfigFile;
-            
+                var mainFolders = [];
+                var buildFolder = AppResources.appFolder + AppResources.buildFolder;
                 //var appAll = [AppResources.appFolder + AppResources.buildFolder + 'app/' + config.appdest];
             
                 var others = AppResources.injectThirdApp;
@@ -986,29 +987,45 @@
                 ];
             
                 var sources = others.concat(appfiles);
+
+                if(AppResources.mainFolders){
+                    for(var i in AppResources.mainFolders){
+                        mainFolders.push(AppResources.mainFolders[i]+'**/*');
+                    }
+                }
+                // console.log(mainFolders);
+                // process.exit();
                 //optimizing js files
                 var task = gulp.src(sources);
                     task.pipe(concat('app.js'))
                         .pipe(uglify()).on('error', function (e) { console.log(e); })
-                        .pipe(gulp.dest(AppResources.buildFolder + 'app/'));
-
-                    //injecting resources optimized
-                        task = gulp.src(AppResources.buildFolder + 'index.html');
-                        task.pipe(injectStr.replace(removeRegex, ''))
-                            .pipe(injectStr.replace(commentsRegexp, '$2'))
-                            .pipe(injectStr.replace(versionRegex, Date.parse(new Date())))
-                            .pipe(gulp.dest(AppResources.buildFolder));
+                        .pipe(gulp.dest(AppResources.buildFolder + AppResources.appName));
 
                     //optimizing html files    
-                        task = gulp.src(appViews);
-                        task.pipe(htmlmin());
-                        task.pipe(gulp.dest(function (file) {
-                            var buildPath = file.base.replace(AppResources.appName, AppResources.buildFolder + 'app/');
-                            buildPath = buildPath.replace('_directivas', AppResources.buildFolder + 'app/directivas');
-                            buildPath = buildPath.replace(/\//g, '\u005c');
-                
-                            return buildPath;
-                        }));
+                        task = gulp.src(appViews)
+                                   .pipe(htmlmin({collapseWhitespace: true}))
+                                   .pipe(gulp.dest(function (file) {
+                                        var buildPath = file.base.replace(AppResources.appName, AppResources.buildFolder + AppResources.appName);
+                                        buildPath = buildPath.replace('_directivas', AppResources.buildFolder + AppResources.appName + '/directivas');
+                                        buildPath = buildPath.replace(/\//g, '\u005c');
+                                        return buildPath;
+                                    }));
+                    //adding main application folders
+                        task = gulp.src(mainFolders)
+                                   .pipe(gulp.dest(function (file) {
+                                       var buildPath = file.base;
+                                       var dest = (buildPath.split('\\'));
+                                                  dest.splice((dest.length - 2),0,AppResources.buildFolder.replace('/',''));
+                                           dest = dest.join('\\');
+                                       return dest;
+                                   }));
+                    //adding index.html main application file
+                    task = gulp.src(AppResources.appFolder + 'index.html')
+                               .pipe(injectStr.replace(removeRegex, ''))
+                               .pipe(injectStr.replace(commentsRegexp, '$2'))
+                               .pipe(injectStr.replace(versionRegex, Date.parse(new Date())))
+                               .pipe(htmlmin({collapseWhitespace: true}))
+                               .pipe(gulp.dest(AppResources.appFolder + AppResources.buildFolder));
             
                 return task;
             });
