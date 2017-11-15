@@ -14,14 +14,14 @@ Angular Controller Standard Code:
  
  To learn more about please see the README.md file.
 */
-(function(){
-    
+(function () {
+
     'use strict';
-    
+
     angular
         .module('<%= mainModule %>.common')
         .factory('requestsHandlerFactory', requestsHandlerFactory);
-    
+
     requestsHandlerFactory.$inject = ['$http', 'messagesHandlerFactory', 'RESOURCES_CONFIG'];
     /**
      * requestsHandlerFactory: this method managed all the request traffic no matter what angular ajax framework has been used.
@@ -29,37 +29,42 @@ Angular Controller Standard Code:
      * @param dependency {Object} messages
      * @param dependency {object} RESOURCES_CONFIG 
      */
-    function requestsHandlerFactory ($http, messages, RESOURCES_CONFIG) {
+    function requestsHandlerFactory($http, messages, RESOURCES_CONFIG) {
         /*--------variables section----------*/
         //Environment variables
         var catchedError;
         var methods = RESOURCES_CONFIG.METHODS;
+        var apiUrl = RESOURCES_CONFIG.API.default;
 
         var factory = {
             getError: getError,
             getLiteralError: getLiteralError,
             requestHandler: requestCall,
+            switchApi: switchApi,
         };
-        
+
         return factory;
-        
+
+        function switchApi(api) {
+            apiUrl = RESOURCES_CONFIG.API[api];
+        }
         /**
-        * getError: This method catch the actual error from "requtesCall".
-        * @private
-        * @method getLiteralError
-        * @return {Object} Javascript Object to be manipulated
-        */
-        function getError () {
+         * getError: This method catch the actual error from "requtesCall".
+         * @private
+         * @method getLiteralError
+         * @return {Object} Javascript Object to be manipulated
+         */
+        function getError() {
             return catchedError;
         }
-        
+
         /**
-        * getLiteralError: This method catch the actual error from "requtesCall"  function and it will return a string instad a object.
-        * @private
-        * @method getLiteralError
-        * @return {String} Text ready to show to the user
-        */
-        function getLiteralError () {
+         * getLiteralError: This method catch the actual error from "requtesCall"  function and it will return a string instad a object.
+         * @private
+         * @method getLiteralError
+         * @return {String} Text ready to show to the user
+         */
+        function getLiteralError() {
             var literalError = getError();
             return literalError.data.error;
         }
@@ -80,93 +85,81 @@ Angular Controller Standard Code:
          * }
          * @returns {*}
          */
-        function handlerGetRequests (requestFor, queryString) {
-            
+        function handlerGetRequests(requestFor, queryString) {
+
             var request;
-            if(angular.isSet(requestFor)){
-                var path;
-                //build query
-                if(requestFor.length === 1) {
-                    //single get query
-                    path = requestFor[0];
-                    request = (path.value) ? restangular.one(path.resource,path.value) :
-                        restangular.one(path.resource);
+            var requestPath = getPath(requestFor);
 
-                }else {
-                    //path query with multiple resources
-
-                    //relationship get query; build path query leave out last object
-                    for (var i in requestFor) {
-                        path = requestFor[i];
-
-                        //if value set apply to restangular query path
-                        if(!request){
-                            request = restangular.one(path.resource,path.value);
-                        }else{
-                            request = (path.value) ? request.one(path.resource, path.value) : request.one(path.resource) ;
-                        }
-                        
-                    }
-                }
-
+            if (requestPath) {
+                requestPath = getFullRequestPath(requestPath);
                 //execute query
-                if(queryString){
-                   //todo revisit this case where you have a query string for lists and single requests
-                    request = request.get(options.queryString);
-                }else if(requestFor.length > 1 &&  !requestFor[requestFor.length-1].value){
-                    //list query
-                    request = request.getList();
-                }else if(requestFor.length > 1 && requestFor[requestFor.length-1].value){
-                    //single query
-                    request = request.get(requestFor[requestFor.length-1].resource,
-                        requestFor[requestFor.length-1].value);
-                }else{
-                    request = request.get();
+                if (queryString) {
+                    //todo revisit this case where you have a query string for lists and single requests
+                    request = $http.get(requestPath, {
+                        params: queryString
+                    });
+                } else {
+                    request = $http.get(requestPath);
                 }
-
-                //return query
-                return request;
             }
-            messages.messagesHandler('suggestion', 'noRequestUrl');
+            //return query
+            return request;
+
         }
 
-        function handlerPostRequests (requestFor, obj) {
-            
+        function handlerPostRequests(requestFor, obj) {
+
             var request;
+            var requestPath;
             var expected = angular.isSet(obj);
 
-            if(expected){
-                 //path post
-                 if(requestFor[0].value){
-                     var resource = requestFor[0].resource;
-                     var value = requestFor[0].value;
+            if (expected) {
+                requestPath = getPath(requestFor);
+                //path post
+                if (requestPath) {
+                    requestPath = getFullRequestPath(requestPath);
+                    request = $http.post(requestPath, obj);
+                }
 
-                     request = restangular.one(resource,value).post(requestFor[1].resource,obj);
-                 }else {
-                     //single resource post
-                     var resource = requestFor[0].resource;
-                     request = restangular.all(resource).post(obj);
-                 }
                 return request;
             }
             messages.messagesHandler('suggestion', 'objectExpected');
         }
 
-        function handlerModificatorsRequests (obj, roll, requestFor) {
+        function handlerPutRequests(requestFor, obj) {
+
+            var request;
+            var requestPath;
+            var expected = angular.isSet(obj);
+
+            if (expected) {
+                requestPath = getPath(requestFor);
+                //path Put
+                if (requestPath) {
+                    requestPath = getFullRequestPath(requestPath);
+                    request = $http.put(requestPath, obj);
+                }
+
+                return request;
+            }
+            messages.messagesHandler('suggestion', 'objectExpected');
+        }
+
+        function handlerModificatorsRequests(obj, roll, requestFor) {
             /*jshint validthis:true*/
             var rolls = ['delete'];
             var request;
-            var action = (rolls.indexOf(roll)) ? 'remove' : roll ;
-            
-            if(angular.isDefined(requestFor)){
+            var action = (rolls.indexOf(roll)) ? 'remove' : roll;
+
+            if (angular.isDefined(requestFor)) {
                 request = restangular.one.apply(requestFor);
-            }else{
-                if(obj.restangularized){
+            } else {
+                if (obj.restangularized) {
                     request = obj[action]();
                     return request;
                 }
             }
-            
+
             messages.messagesHandler('suggestion', 'objectRestangularized');
         }
 
@@ -179,19 +172,19 @@ Angular Controller Standard Code:
          * @param requestFor - Array with an object consisting of a resource and a value attribute.
          * @returns {*}
          */
-        function handlerDeleteRequests (requestFor){
+        function handlerDeleteRequests(requestFor) {
 
             var request;
 
-            if(requestFor) {
+            if (requestFor) {
                 //single delete request
                 var resource = requestFor[0].resource;
 
-                if(requestFor[0].value) {
+                if (requestFor[0].value) {
                     var value = requestFor[0].value;
 
                     request = restangular.one(resource, value).remove();
-                }else{
+                } else {
                     request = restangular.one(resource).remove();
                 }
                 return request;
@@ -218,40 +211,99 @@ Angular Controller Standard Code:
         *       queryString: {}
         * }
         */
-        function requestCall ( callback, action, resource, options) {
-            
+        function requestCall(callback, action, resource, options) {
+
             //Do something here with this
             var request;
-            var requestFor = (angular.isArray(resource)) ? resource : [resource] ;
-            
-            switch(action) {
+            var obj;
+            var requestFor = (angular.isArray(resource)) ? resource : [resource];
+
+            switch (action) {
                 case methods.get:
-                       var query = options.queryString || options.object ;
-                       request = handlerGetRequests(requestFor, query);
+                    var query = (options) ? options.queryString || options.object : query;
+                    query = query || options;
+                    request = handlerGetRequests(requestFor, query);
                     break;
                 case methods.post:
-                       request = handlerPostRequests(requestFor, options.object);
+                    obj = options.object || options;
+                    request = handlerPostRequests(requestFor, obj);
                     break;
-                //case methods.put:
+                case methods.put:
+                    obj = options.object || options;
+                    request = handlerPutRequests(requestFor, obj);
+                    break;
                 case methods.delete:
                 case methods.del:
                     request = handlerDeleteRequests(requestFor);
                     break;
                 default:
-                       messages.messagesHandler('suggestion', 'actionInvalid', methods);
+                    messages.messagesHandler('suggestion', 'actionInvalid', methods);
                     break;
             }
 
             request.then(
-                function ( response ) {
+                function (response) {
+                    //messages.messagesHandler('Success', response);
                     callback(response);
                 },
-                function ( error ) {
+                function (error) {
+                    messages.messagesHandler('Error', { data: error.data.Message });
                     callback(error);
                     catchedError = error;
                 }
             );
-            
+            switchApi("default");
+        }
+
+        /**
+         * This function takes all the variations posibles to the requestFor parameter and transform those to an appropriate path
+         * @param {Any}  requestFor
+         */
+        function getPath(requestFor) {
+            var requestPath;
+
+            if (angular.isSet(requestFor)) {
+                var path;
+                //build query
+                if (requestFor.length === 1) {
+                    //single get query
+                    path = requestFor[0];
+                    if (angular.isObject(path)) {
+                        requestPath = (path.value) ? path.resource + '/' + path.value : path.resource;
+                    } else {
+                        requestPath = path;
+                    }
+
+                } else {
+                    for (var i in requestFor) {
+
+                        path = requestFor[i];
+
+                        if (path) {
+                            requestPath = (path.value) ? path.resource + '/' + path.value + '/' : path.resource + '/';
+                        }
+                    }
+
+                }
+            }
+            return requestPath;
+        }
+        /**
+         * This method verify if the path provided within the requestPath parameter has a correct format to send the request without problems
+         * @param {String} requestPath
+         */
+        function getFullRequestPath(requestPath) {
+            var fullPath = '';
+            var cond = /\/$/.test(apiUrl) && /^\//.test(requestPath);
+
+            if (cond) {
+                fullPath = apiUrl + requestPath.substr(1, requestPath.length);
+            } else {
+                fullPath = apiUrl + requestPath;
+            }
+
+            return fullPath;
+
         }
     }
 })();
