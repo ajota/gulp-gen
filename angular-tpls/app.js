@@ -20,6 +20,7 @@ Angular MainModule Standard Code:
     angular
         .module('<%= mainModule %>', [
             //external modules dependencies
+            'toastr',
             'ui.router',
         
             //custom modules dependencies
@@ -28,5 +29,5 @@ Angular MainModule Standard Code:
             /*@endCustomModule*/
         
         ]);
-    angular.bootstrap(document, '<%= mainModule %>');
+    angular.bootstrap(document, ['<%= mainModule %>']);
 })();
