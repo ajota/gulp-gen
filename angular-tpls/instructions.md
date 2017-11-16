@@ -170,6 +170,9 @@ This command create a directive file with the name provided in the argument insi
 ## launch a testing Server: 
     gulp gen:server  
 
+## clean distribution folder: 
+    gulp gen:clean
+      
 ## Generate a distribution folder: 
     gulp gen:build -[enviroment]
 
@@ -185,6 +188,10 @@ This command create a directive file with the name provided in the argument insi
             
 
 ## Release Notes:
+- 1.2.15
+    - BUG Fixed: Adjustment in gen:build task to correctly create the distribution folder and minifiying all the application files
+    - BUG Fixed: added gen:clean tasks
+
 - 1.2.14
     - BUG Fixed: adding the third app option injection into the index.html file.
     
