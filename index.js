@@ -9,6 +9,7 @@
         const PLUGIN_NAME = 'gulp-gen';
         //modules required
         var fs = require('fs');
+        var path = require("path");
         var gulp = require('gulp');
         var ejs = require('gulp-ejs');
         var inject = require('gulp-inject');
@@ -16,6 +17,7 @@
         var rename = require('gulp-rename');
         var htmlmin = require('gulp-htmlmin');
         var uglify =  require('gulp-uglify');
+        var cleanCss = require('gulp-clean-css');
         var injectStr = require('gulp-inject-string');
         var replace = require('gulp-replace');
         var browserSync = require('browser-sync').create();
@@ -896,10 +898,38 @@
             });
 
             gulp.task('gen:server', function () {
+                gulp.start('gen:inject');
                 return gulp.start('gen:' + AppResources.appName + ':server-reload');
             });
-            
+
+            gulp.task('gen:clean', function(){
+                
+                var rmdir = function(dir) {
+                    var list = fs.readdirSync(dir);
+                    for(var i = 0; i < list.length; i++) {
+                        var filename = path.join(dir, list[i]);
+                        var stat = fs.statSync(filename);
+                        
+                        if(filename == "." || filename == "..") {
+                            // pass these files
+                        } else if(stat.isDirectory()) {
+                            // rmdir recursively
+                            rmdir(filename);
+                        } else {
+                            // rm fiilename
+                            fs.unlinkSync(filename);
+                        }
+                    }
+                    fs.rmdirSync(dir);
+                };
+
+                rmdir(AppResources.appFolder + AppResources.buildFolder);
+
+                return true;
+            });
+
             gulp.task('gen:build', function () {
+                gulp.start('gen:clean');
                 return gulp.start('gen:' + AppResources.appName + ':build');
             });
             
@@ -958,17 +988,30 @@
                 var commentsRegexp = /<!--Uncomment Dist-->([\s\S]*?)<!--([\s\S]*?)-->([\s\S]*?)<!--End:Uncomment Dist-->/g;
                 var removeRegex = /<!--Remove Dist-->([\s\S]*?)<!--End:Remove Dist-->/g;
                 var versionRegex = '{{version}}';
+                var destFolders = {};
                 var thirdFiles = AppResources.thirdConfigFile;
-                var mainFolders = [];
-                var buildFolder = AppResources.appFolder + AppResources.buildFolder;
+
+                var mainFoldersStyles = AppResources.mainFolders.styles + '*.css';
+                var mainFoldersScripts = AppResources.mainFolders.scripts + '*.js';
+                var mainFoldersImages = AppResources.mainFolders.images + '**/*';
+                var mainFoldersFonts = AppResources.mainFolders.styles + 'fonts/*';
+                var mainFoldersStylesLibs = AppResources.mainFolders.styles + 'libs/*.css' ;
+                var mainFoldersScriptsLibs = AppResources.mainFolders.scripts + 'libs/*.js';
+
+                //console.log(mainFoldersScripts);
+
+                for(var i in AppResources.mainFolders){
+                    var main = AppResources.mainFolders[i];
+
+                    destFolders[i] = (main.split('/').filter(Boolean));
+                    destFolders[i].splice((destFolders[i].length-1),0, AppResources.buildFolder );
+                    destFolders[i] = destFolders[i].join('/').replace(/\/{2,}/g, '/');
+                }
+
+
                 //var appAll = [AppResources.appFolder + AppResources.buildFolder + 'app/' + config.appdest];
             
                 var others = AppResources.injectThirdApp;
-                    others.concat([
-                        AppResources.appFolder + AppResources.appName + '/**/*.json',
-                        AppResources.appFolder + AppResources.appName + '/**/**/*.json',
-                        AppResources.appFolder + AppResources.appName + '/**/**/**/*.json'
-                    ]);
                     
                 var appfiles = [
                     AppResources.appFolder + AppResources.appName + '/**/resources.config.js',
@@ -984,15 +1027,12 @@
                 ];
                 var appViews = [
                     AppResources.appFolder + AppResources.appName + '/**/*.html',
+                    AppResources.appFolder + AppResources.appName + '/**/*.json',
                 ];
             
                 var sources = others.concat(appfiles);
 
-                if(AppResources.mainFolders){
-                    for(var i in AppResources.mainFolders){
-                        mainFolders.push(AppResources.mainFolders[i]+'**/*');
-                    }
-                }
+               
                 // console.log(mainFolders);
                 // process.exit();
                 //optimizing js files
@@ -1002,23 +1042,44 @@
                         .pipe(gulp.dest(AppResources.buildFolder + AppResources.appName));
 
                     //optimizing html files    
-                        task = gulp.src(appViews)
-                                   .pipe(htmlmin({collapseWhitespace: true}))
-                                   .pipe(gulp.dest(function (file) {
-                                        var buildPath = file.base.replace(AppResources.appName, AppResources.buildFolder + AppResources.appName);
-                                        buildPath = buildPath.replace('_directivas', AppResources.buildFolder + AppResources.appName + '/directivas');
-                                        buildPath = buildPath.replace(/\//g, '\u005c');
-                                        return buildPath;
-                                    }));
-                    //adding main application folders
-                        task = gulp.src(mainFolders)
-                                   .pipe(gulp.dest(function (file) {
-                                       var buildPath = file.base;
-                                       var dest = (buildPath.split('\\'));
-                                                  dest.splice((dest.length - 2),0,AppResources.buildFolder.replace('/',''));
-                                           dest = dest.join('\\');
-                                       return dest;
-                                   }));
+                    task = gulp.src(appViews)
+                               .pipe(htmlmin({collapseWhitespace: true}))
+                               .pipe(gulp.dest(function (file) {
+                                    var buildPath = file.base.replace(AppResources.appName, AppResources.buildFolder + AppResources.appName);
+                                    buildPath = buildPath.replace('_directivas', AppResources.buildFolder + AppResources.appName + '/directivas');
+                                    buildPath = buildPath.replace(/\//g, '\u005c');
+                                    return buildPath;
+                                }));
+
+                    //adding styles application files
+                    
+                    task = gulp.src(mainFoldersStyles)
+                               .pipe(concat('custom.css'))
+                               .pipe(cleanCss()).on('error', function(e){console.log(e.message)})
+                               .pipe(gulp.dest(destFolders.styles));
+                    
+                    task = gulp.src(mainFoldersStylesLibs)
+                               .pipe(concat('libraries.css'))
+                               .pipe(cleanCss()).on('error', function(e){console.log(e.message);})
+                               .pipe(gulp.dest(destFolders.styles));
+                    
+                    task = gulp.src(mainFoldersFonts)
+                               .pipe(gulp.dest(destFolders.styles + '/fonts/'));
+                    
+                    task = gulp.src(mainFoldersScripts)
+                               .pipe(uglify()).on('error', function(e){ console.log('scripts: '+ e.message+'\n', e.fileName+'\n', e.lineNumber);})
+                               .pipe(concat('custom.js'))
+                               .pipe(gulp.dest(destFolders.scripts));
+                    
+                    
+                    task = gulp.src(mainFoldersScriptsLibs)
+                               .pipe(uglify()).on('error', function(e){ console.log('scriptsLibs: '+e.message+'\n', e.fileName+'\n', e.lineNumber);})
+                               .pipe(concat('libraries.js'))
+                               .pipe(gulp.dest(destFolders.scripts));
+                    
+                    task = gulp.src(mainFoldersImages)
+                               .pipe(gulp.dest(destFolders.images));
+
                     //adding index.html main application file
                     task = gulp.src(AppResources.appFolder + 'index.html')
                                .pipe(injectStr.replace(removeRegex, ''))
