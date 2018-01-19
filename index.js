@@ -1,3 +1,5 @@
+import { read } from 'fs';
+
 //**
 //* =======================================GULP:GEN=================================================
 //* 
@@ -13,6 +15,7 @@
         var gulp = require('gulp');
         var ejs = require('gulp-ejs');
         var inject = require('gulp-inject');
+        var order = require('gulp-order');
         var concat = require('gulp-concat');
         var rename = require('gulp-rename');
         var htmlmin = require('gulp-htmlmin');
@@ -351,7 +354,7 @@
                             subModule.substr((camelSubModulo + 1), subModule.length).slice(1);
                     }
     
-                    var mainModule = fs.readFileSync(AppResources.appFolder + AppResources.appName + '/' + AppResources.mainAppModuleName + 'js', 'utf8').match(/module\('(.*)'/)[1];
+                    var mainModule = fs.readFileSync(AppResources.appFolder + AppResources.appName + '/' + AppResources.mainAppModuleName + '.js', 'utf8').match(/module\('(.*)'/)[1];
                     var moduleName = mainModule + '.' + name;
                     var subModuleUpper = subModule.charAt(0).toUpperCase() + subModule.slice(1);
     
@@ -416,7 +419,7 @@
     
                 if (name.length === 3 && name[1] === '-in') {
     
-                    var controller = (Array.isArray(name)) ? name[0].replace(/[^\w]/, '') : name;;
+                    var controller = (Array.isArray(name)) ? name[0].replace(/[^\w]/, '') : name;
                     var module = name[2].replace(/[^\w]/, '');
     
                     var moduleFolder = AppResources.appName + '/' + module + '/';
@@ -692,9 +695,9 @@
                         injectsModule.push(ignore);
                         injectScripts.push(ignore);
                         injectsLibs.push(ignore);
-                        if(injectsThird.length > 0){
+                        /*if(injectsThird.length > 0){
                             injectsThird.push(ignore);
-                        }
+                        }*/
                     }
                 }
                 
@@ -811,6 +814,7 @@
 
             gulp.task('gen:inject:route', function () {
                 if (tasksData.viewName) {
+                    var task;
                     var routesFolder = AppResources.appFolder + AppResources.appName + '/' + AppResources.appConfigFolder + '/';
                     var routesFile = 'routes.config.js';
                     var routesConfig = routesFolder + routesFile;
@@ -829,9 +833,9 @@
      
                         if (!hasRoute) {
                             //please doesn't clean the whitespaces that is needed for indention
-                            console.log(isInitial+'\n');
+                            
                             if(isInitial){
-                                var task = gulp.src(routesConfig)
+                                task = gulp.src(routesConfig)
                                     .pipe(replace(/(.*[^])(\/\*@endRoutes\*\/)/g, '$1'+tasksData.viewName+': \''+tasksData.viewName+'\',\n$1$2'))
                                     .pipe(replace(/(.*[^])(\/\*@endUrls\*\/)/g, '$1'+tasksData.viewName+': \'/'+tasksData.viewName+'\',\n$1$2'))
                                     .pipe(gulp.dest(routesFolder));
@@ -842,7 +846,7 @@
                                 var urlRegex = (urlHasNotColen)? /[\"\']([\r\n\s]+)\/\*@endUrls/g : /[\"\'],([\r\n\s]+)\/\*@endUrls/g;
                                 
                                 
-                                var task = gulp.src(routesConfig)
+                                task = gulp.src(routesConfig)
                                     .pipe(replace(routeRegex, '\',$1' + tasksData.viewName + ': \'' + tasksData.viewName + '$&'))
                                     .pipe(replace(urlRegex, '\',$1' + tasksData.viewName + ': \'/' + tasksData.viewName + '$&'))
                                     .pipe(gulp.dest(routesFolder));
@@ -970,7 +974,7 @@
                             var itemValue = enviroments[argEnviroment][i];
                             var regex = new RegExp(i +"(\s+)?:.+", 'i');
                             
-                            task.pipe(replace(regex, i.toLocaleUpperCase() +': "' + itemValue + '",'));
+                            task.pipe(replace(regex, i+': "' + itemValue + '",'));
                         }
                         
                         task.pipe(gulp.dest(function(file){
@@ -997,6 +1001,7 @@
                 var mainFoldersFonts = AppResources.mainFolders.styles + 'fonts/*';
                 var mainFoldersStylesLibs = AppResources.mainFolders.styles + 'libs/*.css' ;
                 var mainFoldersScriptsLibs = AppResources.mainFolders.scripts + 'libs/*.js';
+                var  mainFoldersScriptsLibsOrder = AppResources.common_bower.scripts;
 
                 //console.log(mainFoldersScripts);
 
@@ -1046,8 +1051,8 @@
                                .pipe(htmlmin({collapseWhitespace: true}))
                                .pipe(gulp.dest(function (file) {
                                     var buildPath = file.base.replace(AppResources.appName, AppResources.buildFolder + AppResources.appName);
-                                    buildPath = buildPath.replace('_directivas', AppResources.buildFolder + AppResources.appName + '/directivas');
-                                    buildPath = buildPath.replace(/\//g, '\u005c');
+                                        buildPath = buildPath.replace('_directivas', AppResources.buildFolder + AppResources.appName + '/directivas');
+                                        buildPath = buildPath.replace(/\//g, '\u005c');
                                     return buildPath;
                                 }));
 
@@ -1055,7 +1060,7 @@
                     
                     task = gulp.src(mainFoldersStyles)
                                .pipe(concat('custom.css'))
-                               .pipe(cleanCss()).on('error', function(e){console.log(e.message)})
+                               .pipe(cleanCss()).on('error', function(e){console.log(e.message);})
                                .pipe(gulp.dest(destFolders.styles));
                     
                     task = gulp.src(mainFoldersStylesLibs)
@@ -1074,6 +1079,7 @@
                     
                     task = gulp.src(mainFoldersScriptsLibs)
                                .pipe(uglify()).on('error', function(e){ console.log('scriptsLibs: '+e.message+'\n', e.fileName+'\n', e.lineNumber);})
+                               .pipe(order(mainFoldersScriptsLibsOrder))
                                .pipe(concat('libraries.js'))
                                .pipe(gulp.dest(destFolders.scripts));
                     
