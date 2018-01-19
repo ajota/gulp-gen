@@ -188,7 +188,7 @@ This command create a directive file with the name provided in the argument insi
             
 
 ## Release Notes:
-- 1.2.15
+- 1.2.16
     - BUG Fixed: Added order for js files concatenation
     
 - 1.2.15
