@@ -188,6 +188,8 @@ This command create a directive file with the name provided in the argument insi
             
 
 ## Release Notes:
+- 1.3.0
+    - UPDATE: Pluguin updated to work with newer gulp versions (4.0.0)
 - 1.2.17
     - BUG Fixed: Import reference problem
 

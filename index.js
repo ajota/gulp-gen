@@ -107,31 +107,6 @@
     
             generateAppConfigFile(appDirectory);
             //createInjectSections();
-
-            gulp.task('gen', ['gen:app', 'gen:config'], function () {
-    
-                var commonFiles = [
-                    AppResources['angular-template'] + 'messages.js',
-                    AppResources['angular-template'] + 'commons.js',
-                    AppResources['angular-template'] + 'requests.js',
-                    AppResources['angular-template'] + 'leeme.md',
-                ];
-                var commonFolder = AppResources.appName + '/common/';
-                var isDir = fs.existsSync(AppResources.appFolder + commonFolder);
-    
-                if (!isDir) {
-                    console.log(gulpGenPrefix + 'Creating common folder for angular ' + AppResources.appName + ' app...');
-                    gulp.src(commonFiles)
-                        .pipe(ejs({ mainModule: name }, { ext: '.js' }))
-                        .pipe(rename({ dirname: commonFolder }))
-                        .pipe(gulp.dest(AppResources.appFolder));
-                    console.log(gulpGenPrefix + 'The common folder it\'s ready!.');
-                } else {
-                    console.warn(gulpGenPrefix + 'The folder common/ all ready exists.');
-                    process.exit();
-                }
-            });
-    
             gulp.task('gen:app', function () {
     
                 name = AppResources.appName;
@@ -195,6 +170,30 @@
                     console.log(gulpGenPrefix + 'The configuartion folder it\'s ready!.');
                 } else {
                     console.warn(gulpGenPrefix + 'The folder ' + AppResources.appConfigFolder + '/ all ready exists.');
+                    process.exit();
+                }
+            });
+
+            gulp.task('gen', gulp.series(['gen:app', 'gen:config']), function () {
+    
+                var commonFiles = [
+                    AppResources['angular-template'] + 'messages.js',
+                    AppResources['angular-template'] + 'commons.js',
+                    AppResources['angular-template'] + 'requests.js',
+                    AppResources['angular-template'] + 'leeme.md',
+                ];
+                var commonFolder = AppResources.appName + '/common/';
+                var isDir = fs.existsSync(AppResources.appFolder + commonFolder);
+    
+                if (!isDir) {
+                    console.log(gulpGenPrefix + 'Creating common folder for angular ' + AppResources.appName + ' app...');
+                    gulp.src(commonFiles)
+                        .pipe(ejs({ mainModule: name }, { ext: '.js' }))
+                        .pipe(rename({ dirname: commonFolder }))
+                        .pipe(gulp.dest(AppResources.appFolder));
+                    console.log(gulpGenPrefix + 'The common folder it\'s ready!.');
+                } else {
+                    console.warn(gulpGenPrefix + 'The folder common/ all ready exists.');
                     process.exit();
                 }
             });
@@ -641,7 +640,46 @@
                 }
             });
 
-            gulp.task('gen:inject', ['gen:inject:generals'], function(){
+            gulp.task('gen:inject:generals', function () {
+                
+                var styles = [],
+                    scripts = [],
+                    bower = AppResources.appFolder + '/bower_components/',
+                    style_libs = AppResources.common_bower.styles,
+                    scripts_libs = AppResources.common_bower.scripts,
+                    ignore = AppResources.common_bower.ignore;
+                
+                
+                var copyToApplication = {
+                    styles:  AppResources.mainFolders.styles + 'libs/',
+                    scripts: AppResources.mainFolders.scripts + 'libs/',              
+                };
+                
+                style_libs.forEach(function(item){
+                    styles.push(bower + '**/' + item);
+                });
+                scripts_libs.forEach(function(item){
+                    scripts.push(bower + '**/' + item);
+                });
+                if(ignore && ignore.length > 0){
+                    ignore.forEach(function(item) {
+                        scripts.push('!'+ bower + '**/' + item);   
+                    });
+                }
+                
+                // console.log(bower, copyToApplication);
+                // process.exit();
+
+                gulp.src(styles)
+                    .pipe(rename({dirname: ''}))
+                    .pipe(gulp.dest(copyToApplication.styles));
+                
+                gulp.src(scripts)
+                    .pipe(rename({dirname: ''}))
+                    .pipe(gulp.dest(copyToApplication.scripts));
+            });
+
+            gulp.task('gen:inject', gulp.series(['gen:inject:generals']), function(){
 
                 //Default properties
                 AppResources.ignoreModuleInject = AppResources.ignoreModuleInject || [];
@@ -860,45 +898,6 @@
                 }
             });
 
-            gulp.task('gen:inject:generals', function () {
-                
-                var styles = [],
-                    scripts = [],
-                    bower = AppResources.appFolder + '/bower_components/',
-                    style_libs = AppResources.common_bower.styles,
-                    scripts_libs = AppResources.common_bower.scripts,
-                    ignore = AppResources.common_bower.ignore;
-                
-                
-                var copyToApplication = {
-                    styles:  AppResources.mainFolders.styles + 'libs/',
-                    scripts: AppResources.mainFolders.scripts + 'libs/',              
-                };
-                
-                style_libs.forEach(function(item){
-                    styles.push(bower + '**/' + item);
-                });
-                scripts_libs.forEach(function(item){
-                    scripts.push(bower + '**/' + item);
-                });
-                if(ignore && ignore.length > 0){
-                    ignore.forEach(function(item) {
-                        scripts.push('!'+ bower + '**/' + item);   
-                    });
-                }
-                
-                // console.log(bower, copyToApplication);
-                // process.exit();
-
-                gulp.src(styles)
-                    .pipe(rename({dirname: ''}))
-                    .pipe(gulp.dest(copyToApplication.styles));
-                
-                gulp.src(scripts)
-                    .pipe(rename({dirname: ''}))
-                    .pipe(gulp.dest(copyToApplication.scripts));
-            });
-
             gulp.task('gen:server', function () {
                 gulp.start('gen:inject');
                 return gulp.start('gen:' + AppResources.appName + ':server-reload');
@@ -986,7 +985,7 @@
                 }
             });
 
-            gulp.task('gen:' + AppResources.appName + ':build', ['gen:' + AppResources.appName + ':publish'], function () {
+            gulp.task('gen:' + AppResources.appName + ':build', gulp.series(['gen:' + AppResources.appName + ':publish']), function () {
                 var commentsRegexp = /<!--Uncomment Dist-->([\s\S]*?)<!--([\s\S]*?)-->([\s\S]*?)<!--End:Uncomment Dist-->/g;
                 var removeRegex = /<!--Remove Dist-->([\s\S]*?)<!--End:Remove Dist-->/g;
                 var versionRegex = '{{version}}';
