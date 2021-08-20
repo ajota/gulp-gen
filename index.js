@@ -278,8 +278,7 @@
                                            .pipe(gulp.dest(AppResources.appFolder));
                                            setTimeout(function () {
                                                tasksData = options;
-                                               gulp.start('gen:inject');
-                                               gulp.start('gen:inject:route');
+                                               gulp.series('gen:inject', 'gen:inject:route');
                                            }, 2000);
         
                                 console.log(gulpGenPrefix + 'The ' + originalName + '/ folder it\'s ready!.');
@@ -624,7 +623,7 @@
                             .pipe(rename({ dirname: 'components', prefix: directivefileName + '.' }))
                             .pipe(gulp.dest(AppResources.appFolder + commonFolder));
                         setTimeout(function () {
-                            gulp.start('gen:inject');
+                            gulp.series('gen:inject');
                         }, 2000);
     
                         console.log(gulpGenPrefix + 'The ' + directiveName + ' component it\'s ready!.');
@@ -899,8 +898,7 @@
             });
 
             gulp.task('gen:server', function () {
-                gulp.start('gen:inject');
-                return gulp.start('gen:' + AppResources.appName + ':server-reload');
+                return gulp.series( 'gen:inject', 'gen:' + AppResources.appName + ':server-reload');
             });
 
             gulp.task('gen:clean', function(){
@@ -930,8 +928,7 @@
             });
 
             gulp.task('gen:build', function () {
-                gulp.start('gen:clean');
-                return gulp.start('gen:' + AppResources.appName + ':build');
+                return gulp.series( 'gen:clean', 'gen:' + AppResources.appName + ':build');
             });
             
             gulp.task('gen:' + AppResources.appName + ':server-reload', function () {
