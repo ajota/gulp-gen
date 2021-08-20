@@ -174,7 +174,7 @@
                 }
             });
 
-            gulp.task('gen', gulp.series(['gen:app', 'gen:config']), function () {
+            gulp.task('gen', gulp.series('gen:app', 'gen:config'), function () {
     
                 var commonFiles = [
                     AppResources['angular-template'] + 'messages.js',
@@ -678,7 +678,7 @@
                     .pipe(gulp.dest(copyToApplication.scripts));
             });
 
-            gulp.task('gen:inject', gulp.series(['gen:inject:generals']), function(){
+            gulp.task('gen:inject', gulp.series('gen:inject:generals'), function(){
 
                 //Default properties
                 AppResources.ignoreModuleInject = AppResources.ignoreModuleInject || [];
@@ -982,7 +982,7 @@
                 }
             });
 
-            gulp.task('gen:' + AppResources.appName + ':build', gulp.series(['gen:' + AppResources.appName + ':publish']), function () {
+            gulp.task('gen:' + AppResources.appName + ':build', gulp.series('gen:' + AppResources.appName + ':publish'), function () {
                 var commentsRegexp = /<!--Uncomment Dist-->([\s\S]*?)<!--([\s\S]*?)-->([\s\S]*?)<!--End:Uncomment Dist-->/g;
                 var removeRegex = /<!--Remove Dist-->([\s\S]*?)<!--End:Remove Dist-->/g;
                 var versionRegex = '{{version}}';
