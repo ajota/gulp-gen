@@ -283,7 +283,8 @@
                                            console.log('Module files injection starts');
                                            
                                            tasksData = options;
-                                           genInject(genInjectRoute(done));
+                                           genInject(genInjectRoute);
+                                           
                                        }, 2000);
     
                             console.log(gulpGenPrefix + 'The ' + originalName + '/ folder it\'s ready!.');
@@ -691,6 +692,7 @@
         function genInject(done){
 
             console.log('Identifying files to inject');
+
             //Default properties
             AppResources.ignoreModuleInject = AppResources.ignoreModuleInject || [];
             //
@@ -801,96 +803,115 @@
                 
                 injectsLibs.push( AppResources.appFolder + scripts + 'libs/' + item);
             });
-            
-            console.log(injectsLibs);
-            
-            var indexFile = gulp.src(AppResources.appFolder + '/index.html');
-            
+
+            var indexHtml = AppResources.appFolder + 'index.html';
+
             if(injectsLibs.length){
-                indexFile = indexFile.pipe(inject(
-                    gulp.src(injectsLibs, {read:false}), 
-                    {relative: true}
-                ))
+                gulp.src(indexHtml)
+                    .pipe(inject(
+                        gulp.src(injectsLibs, {read:false}), 
+                        {relative: true}
+                    ))
+                    .pipe(gulp.dest(AppResources.appFolder));
             }
 
             if(injectCss.length){
-                indexFile = indexFile.pipe(inject(
-                    gulp.src(injectCss, {read:false}), 
-                    {relative: true}
-                ))
+                gulp.src(indexHtml)
+                    .pipe(inject(
+                        gulp.src(injectCss, {read:false}), 
+                        {relative: true}
+                    ))
+                    .pipe(gulp.dest(AppResources.appFolder));
             }
 
             if(injectsThird.length){
-                indexFile = indexFile.pipe(inject(
-                    gulp.src(injectsThird, { read: false }),
-                    { starttag: '<!--inject:thirdApp:{{ext}}-->', relative: true, empty: true }
-                ))
+                gulp.src(indexHtml)
+                    .pipe(inject(
+                        gulp.src(injectsThird, { read: false }),
+                        { starttag: '<!--inject:thirdApp:{{ext}}-->', relative: true, empty: true }
+                    ))
+                    .pipe(gulp.dest(AppResources.appFolder))
             }
             
             if(injectScripts.length){
-                indexFile = indexFile.pipe(inject(
-                    gulp.src(injectScripts, {read:false}), 
-                    {starttag: '<!--inject:custom:{{ext}}-->',relative:true}
-                ))
+                gulp.src(indexHtml)
+                    .pipe(inject(
+                        gulp.src(injectScripts, {read:false}), 
+                        {starttag: '<!--inject:custom:{{ext}}-->',relative:true}
+                    ))
+                    .pipe(gulp.dest(AppResources.appFolder))
             }
 
             if(injectSass.length){
-                indexFile = indexFile.pipe(inject(
-                    gulp.src(injectSass, {read:false}),
-                    {   starttag:'<!--inject:sass-->',
-                        endtag:'<!--endinject-->',
-                        transform: function (filepath) {
-                            return '<link rel="stylesheet" href="'+filepath+'">';
-                        },
-                        relative:true
-                    }
-                ))
+                gulp.src(indexHtml)
+                    .pipe(inject(
+                        gulp.src(injectSass, {read:false}),
+                        {   starttag:'<!--inject:sass-->',
+                            endtag:'<!--endinject-->',
+                            transform: function (filepath) {
+                                return '<link rel="stylesheet" href="'+filepath+'">';
+                            },
+                            relative:true
+                        }
+                    ))
+                    .pipe(gulp.dest(AppResources.appFolder))
             }
 
             if(injectsApp.length){
-                indexFile = indexFile.pipe(inject(
-                    gulp.src(injectsApp, {read:false}),
-                    {starttag: '<!--inject:app:{{ext}}-->', relative:true}
-                ))
+                gulp.src(indexHtml)
+                    .pipe(inject(
+                        gulp.src(injectsApp, {read:false}),
+                        {starttag: '<!--inject:app:{{ext}}-->', relative:true}
+                    ))
+                    .pipe(gulp.dest(AppResources.appFolder))
             }
 
             if(injectsCommon.length){
-                indexFile = indexFile.pipe(inject(
-                    gulp.src(injectsCommon, {read:false}),
-                    {starttag: '<!--inject:common:{{ext}}-->', relative:true}
-                ))
+                gulp.src(indexHtml)
+                    .pipe(inject(
+                        gulp.src(injectsCommon, {read:false}),
+                        {starttag: '<!--inject:common:{{ext}}-->', relative:true}
+                    ))
+                    .pipe(gulp.dest(AppResources.appFolder))
             }
 
             if(injectsComponents.length){
-                indexFile = indexFile.pipe(inject(
-                    gulp.src(injectsComponents, {read:false}),
-                    {starttag: '<!--inject:components:{{ext}}-->', relative:true}
-                ))
+                gulp.src(indexHtml)
+                    .pipe(inject(
+                        gulp.src(injectsComponents, {read:false}),
+                        {starttag: '<!--inject:components:{{ext}}-->', relative:true}
+                    ))
+                    .pipe(gulp.dest(AppResources.appFolder))
             }
 
             if(injectsModule.length){
-                indexFile = indexFile.pipe(inject(
-                    gulp.src(injectsModule, {read:false}),
-                    {starttag: '<!--inject:module:{{ext}}-->', relative:true}
-                ))
+                gulp.src(indexHtml)
+                    .pipe(inject(
+                        gulp.src(injectsModule, {read:false}),
+                        {starttag: '<!--inject:module:{{ext}}-->', relative:true}
+                    ))
+                    .pipe(gulp.dest(AppResources.appFolder))
             }
 
             if(injectsFactory.length){
-                indexFile = indexFile.pipe(inject(
-                    gulp.src(injectsFactory, {read:false}),
-                    {starttag: '<!--inject:factory:{{ext}}-->', relative:true}
-                ))
+                gulp.src(indexHtml)
+                    .pipe(inject(
+                        gulp.src(injectsFactory, {read:false}),
+                        {starttag: '<!--inject:factory:{{ext}}-->', relative:true}
+                    ))
+                    .pipe(gulp.dest(AppResources.appFolder))
             }
 
             if(injectsControllers.length){
-                indexFile = indexFile.pipe(inject(
-                    gulp.src(injectsControllers, {read:false}),
-                    {starttag: '<!--inject:controller:{{ext}}-->', relative:true}
-                ))
+                gulp.src(indexHtml)
+                    .pipe(inject(
+                        gulp.src(injectsControllers, {read:false}),
+                        {starttag: '<!--inject:controller:{{ext}}-->', relative:true}
+                    ))
+                    .pipe(gulp.dest(AppResources.appFolder))
             }
-            indexFile.pipe(gulp.dest(AppResources.appFolder));
 
-            _done();
+            done();
         }
         
         gulp.task('gen:inject:route', genInjectRoute);
