@@ -966,11 +966,12 @@
             done();
         }
         
-        gulp.task('gen:server', function () {
-            return gulp.series( 'gen:inject', 'gen:' + AppResources.appName + ':server-reload');
+        gulp.task('gen:server', function (done) {
+            genInject( serverReload );
+            done();
         });
 
-        gulp.task('gen:clean', function(){
+        gulp.task('gen:clean', function(done){
             
             var rmdir = function(dir) {
                 var list = fs.readdirSync(dir);
@@ -992,15 +993,16 @@
             };
 
             rmdir(AppResources.appFolder + AppResources.buildFolder);
-
-            return true;
+            done();
         });
 
         gulp.task('gen:build', function (done) {
-            return gulp.series( 'gen:clean', 'gen:' + AppResources.appName + ':build');
+            gulp.series( 'gen:clean', 'gen:' + AppResources.appName + ':build');
+            done();
         });
         
-        gulp.task('gen:' + AppResources.appName + ':server-reload', function () {
+        gulp.task('gen:' + AppResources.appName + ':server-reload', serverReload );
+        function serverReload(done) {
             var reloadWhenChange = AppResources.reloadWhenChange;
             var browserConfig = {
                 server: "./",
@@ -1013,8 +1015,10 @@
         
             browserSync.init(browserConfig);
             gulp.watch(reloadWhenChange).on('change', browserSync.reload);
-            done();
-        });
+            if(done){
+                done();
+            }
+        }
 
         gulp.task('gen:' + AppResources.appName + ':publish', function (done) {
             var task;
